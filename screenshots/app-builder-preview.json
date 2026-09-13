@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "RESET Trade",
+      "hasCanvas": false,
+      "bodyTextLen": 685,
+      "bodyTextHash": "1a1fbee4bf914ca7e76ad6d89a5f1ba15b605c27ac84e552f7c664ef77d77312",
+      "bodyTextPrefix": "CARIBBEAN SMES RESET Trade Intelligence for exporters — readines",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "RESET Trade",
+      "hasCanvas": false,
+      "bodyTextLen": 609,
+      "bodyTextHash": "bd20932168ddc211441fbda18491fb04c23af1ac84f47065100dfa12c0392081",
+      "bodyTextPrefix": "CARIBBEAN SMES RESET Trade Intelligence for exporters — readines",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

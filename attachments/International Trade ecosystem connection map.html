@@ -1,0 +1,209 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>RESET ITIP — Ecosystem Connection Map</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:#f5f5f5;padding:24px;}
+.page{max-width:1100px;margin:0 auto;background:#fff;border-radius:16px;padding:36px;box-shadow:0 2px 20px rgba(0,0,0,0.08);}
+
+.header{background:#0F1C2A;color:#fff;border-radius:12px;padding:20px 28px;margin-bottom:28px;text-align:center;border-bottom:4px solid #B8860B;}
+.header h1{font-size:clamp(16px,2vw,24px);font-weight:500;margin-bottom:6px;}
+.header p{font-size:clamp(11px,1vw,14px);opacity:0.65;}
+
+/* Centre hub */
+.hub-wrap{display:flex;justify-content:center;margin-bottom:28px;}
+.hub{background:#B86A10;color:#fff;border-radius:14px;padding:20px 32px;text-align:center;max-width:380px;border:3px solid #B8860B;}
+.hub-title{font-size:clamp(15px,1.6vw,20px);font-weight:500;margin-bottom:8px;}
+.hub-sub{font-size:clamp(12px,1.1vw,14px);opacity:0.85;line-height:1.55;}
+.hub-engines{display:flex;gap:10px;margin-top:12px;justify-content:center;flex-wrap:wrap;}
+.hub-eng{background:rgba(255,255,255,0.15);border-radius:6px;padding:4px 12px;font-size:11px;font-weight:500;}
+
+/* Connection grid — 3 columns */
+.connections{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+.conn-card{border-radius:12px;overflow:hidden;}
+.conn-head{padding:14px 16px;color:#fff;}
+.conn-head-title{font-size:clamp(13px,1.2vw,16px);font-weight:500;margin-bottom:4px;}
+.conn-head-sub{font-size:11px;opacity:0.8;}
+.conn-body{background:#fff;border:1px solid #ddd;border-top:none;padding:14px 16px;}
+.flow-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:clamp(11px,1vw,13px);color:#444;line-height:1.55;}
+.flow-row:last-child{margin-bottom:0;}
+.flow-arrow{color:#0F6E56;font-weight:500;flex-shrink:0;font-size:12px;margin-top:1px;}
+.flow-arrow.out{color:#B86A10;}
+
+.c1{background:#1A3C5E;}
+.c2{background:#0F6E56;}
+.c3{background:#B86A10;}
+.c4{background:#4A1580;}
+.c5{background:#27500A;}
+.c6{background:#185FA5;}
+
+/* External partners */
+.ext-label{font-size:clamp(13px,1.2vw,16px);font-weight:500;color:#1A3C5E;margin-bottom:12px;text-align:center;}
+.ext-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.ext-card{background:#F5F5F5;border:1px solid #ddd;border-radius:10px;padding:14px;}
+.ext-title{font-size:clamp(12px,1.1vw,14px);font-weight:500;color:#1A3C5E;margin-bottom:6px;}
+.ext-items{font-size:clamp(11px,1vw,13px);color:#666;line-height:1.6;}
+
+/* Phase roadmap */
+.roadmap{background:#1A3C5E;border-radius:12px;padding:20px;color:#fff;}
+.roadmap-label{font-size:12px;font-weight:500;opacity:0.6;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:14px;text-align:center;}
+.roadmap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.phase{background:rgba(255,255,255,0.08);border-radius:8px;padding:12px;}
+.phase-label{font-size:11px;font-weight:500;margin-bottom:6px;}
+.phase-detail{font-size:11px;opacity:0.75;line-height:1.55;}
+.ph1{border-top:3px solid #0F6E56;}
+.ph2{border-top:3px solid #185FA5;}
+.ph3{border-top:3px solid #B86A10;}
+.ph4{border-top:3px solid #4A1580;}
+
+@media(max-width:800px){.connections{grid-template-columns:repeat(2,1fr);}.ext-grid{grid-template-columns:repeat(2,1fr);}.roadmap-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.connections,.ext-grid,.roadmap-grid{grid-template-columns:1fr;}}
+</style></head><body>
+<div class="page">
+
+  <div class="header">
+    <h1>RESET International Trade &amp; Intelligence Platform — Ecosystem Connection Map</h1>
+    <p>How Component 6 connects to every other component of the RESET Integrated Platform Ecosystem</p>
+  </div>
+
+  <!-- CENTRE HUB -->
+  <div class="hub-wrap">
+    <div class="hub">
+      <div class="hub-title">RESET International Trade &amp; Intelligence Platform</div>
+      <div class="hub-sub">The market access and intelligence layer that connects every other component to global opportunity, regional agreements, and location-specific context</div>
+      <div class="hub-engines">
+        <span class="hub-eng">Engine 1 — International Trade Intelligence</span>
+        <span class="hub-eng">Engine 2 — Location Intelligence</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ECOSYSTEM CONNECTIONS — 6 component cards -->
+  <div class="connections">
+
+    <div class="conn-card">
+      <div class="conn-head c1">
+        <div class="conn-head-title">BSC Platform v2.0</div>
+        <div class="conn-head-sub">Financial Empowerment Engine · Bankability pathway</div>
+      </div>
+      <div class="conn-body">
+        <div class="flow-row"><span class="flow-arrow">→</span>Export readiness gaps connect directly to bankability pathway — export businesses need stronger financial and management capability scores</div>
+        <div class="flow-row"><span class="flow-arrow">→</span>Export Finance Navigator connects to AI Financial Matching Engine — one application, multiple export finance providers competing</div>
+        <div class="flow-row"><span class="flow-arrow out">←</span>6-Domain capability scores feed Export Readiness Assessment — financial and management dimensions shared</div>
+        <div class="flow-row"><span class="flow-arrow out">←</span>BSC Bankability Certificate signals export credibility to international buyers and development finance providers</div>
+      </div>
+    </div>
+
+    <div class="conn-card">
+      <div class="conn-head c2">
+        <div class="conn-head-title">RESET SkillsHub</div>
+        <div class="conn-head-sub">Five Learning Worlds · Avatar Lecturer · ICDL</div>
+      </div>
+      <div class="conn-body">
+        <div class="flow-row"><span class="flow-arrow">→</span>Export readiness gaps automatically trigger specific SkillsHub course recommendations — trade compliance, export documentation, language skills</div>
+        <div class="flow-row"><span class="flow-arrow">→</span>New trade-specific courses added — international business, EPA utilisation, export financing, Mode 4 service delivery</div>
+        <div class="flow-row"><span class="flow-arrow out">←</span>Language certifications (FR, ES, NL) feed Mode 4 EPA service delivery profiling — multilingual capability opens EU markets</div>
+        <div class="flow-row"><span class="flow-arrow out">←</span>Skills data feeds trade intelligence — Caribbean skills available for export service delivery mapped by territory</div>
+      </div>
+    </div>
+
+    <div class="conn-card">
+      <div class="conn-head c3">
+        <div class="conn-head-title">Jobs Board &amp; Career Agency</div>
+        <div class="conn-head-sub">FIT Programme · Career placement · Employer matching</div>
+      </div>
+      <div class="conn-body">
+        <div class="flow-row"><span class="flow-arrow">→</span>International trade intelligence creates labour demand signals — export businesses need multilingual staff, trade compliance specialists, logistics coordinators</div>
+        <div class="flow-row"><span class="flow-arrow">→</span>Mode 4 EPA movement creates professional services employment — Caribbean professionals working in EU member states temporarily</div>
+        <div class="flow-row"><span class="flow-arrow out">←</span>Labour market data feeds international intelligence layer — what Caribbean skills are available for export service delivery</div>
+        <div class="flow-row"><span class="flow-arrow out">←</span>FIT-certified candidates with language and trade skills surface to international employer matching</div>
+      </div>
+    </div>
+
+    <div class="conn-card">
+      <div class="conn-head c4">
+        <div class="conn-head-title">Research &amp; Policy Institute</div>
+        <div class="conn-head-sub">CIES model · AI analytics · Policy influence</div>
+      </div>
+      <div class="conn-body">
+        <div class="flow-row"><span class="flow-arrow">→</span>All trade intelligence data — EPA utilisation rates, market access patterns, export readiness scores, trade flows by sector — feeds R&amp;PI research pipeline</div>
+        <div class="flow-row"><span class="flow-arrow">→</span>Platform data enables R&amp;PI to produce the first comprehensive Caribbean EPA utilisation studies — evidence for government policy advocacy</div>
+        <div class="flow-row"><span class="flow-arrow out">←</span>R&amp;PI trade policy research and EPA analysis feeds Trade Agreement Navigator continuously — platform intelligence improves as research grows</div>
+        <div class="flow-row"><span class="flow-arrow out">←</span>R&amp;PI sector master plans and import substitution glide paths feed Location Intelligence Engine — national and regional layers</div>
+      </div>
+    </div>
+
+    <div class="conn-card">
+      <div class="conn-head c5">
+        <div class="conn-head-title">AI-Enabled Procurement Engine</div>
+        <div class="conn-head-sub">14 modules · Tier system · Consortium Builder</div>
+      </div>
+      <div class="conn-body">
+        <div class="flow-row"><span class="flow-arrow">→</span>International Procurement Gateway adds UN, EU TED, and World Bank procurement to the weekly Procurement Intelligence Brief — same delivery system, expanded scope</div>
+        <div class="flow-row"><span class="flow-arrow">→</span>EPA procurement provisions — EU thresholds, TED monitoring, documentation — integrated with Procurement Readiness Passport</div>
+        <div class="flow-row"><span class="flow-arrow">→</span>Consortium Builder capabilities available for international procurement consortium formation under EPA and multilateral frameworks</div>
+        <div class="flow-row"><span class="flow-arrow out">←</span>Procurement tier scores and track record feed export readiness assessment — established procurement performers have stronger export readiness</div>
+      </div>
+    </div>
+
+    <div class="conn-card">
+      <div class="conn-head c6">
+        <div class="conn-head-title">RESET App</div>
+        <div class="conn-head-sub">Unified front door · RESET Dashboard · AI Assistant</div>
+      </div>
+      <div class="conn-body">
+        <div class="flow-row"><span class="flow-arrow">→</span>Trade intelligence delivered on RESET Dashboard — export readiness score, EPA opportunity alerts, location-specific programme notifications</div>
+        <div class="flow-row"><span class="flow-arrow">→</span>AI Assistant gains full trade context — 'What EPA opportunities exist for my product in France?' answered with full ecosystem context</div>
+        <div class="flow-row"><span class="flow-arrow">→</span>International procurement alerts delivered as push notifications — same intelligence Brief, App delivery channel added</div>
+        <div class="flow-row"><span class="flow-arrow out">←</span>App usage and user profile data enables personalised trade opportunity matching — location, sector, and capacity all inform intelligence delivery</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- EXTERNAL PARTNERS -->
+  <div class="ext-label">External partners &amp; funding connections</div>
+  <div class="ext-grid">
+    <div class="ext-card">
+      <div class="ext-title">EU Delegation Jamaica</div>
+      <div class="ext-items">EU development cooperation funding · EDF (European Development Fund) · PAPED — EPA capacity building programme specifically designed to fund trade facilitation organisations like RESET</div>
+    </div>
+    <div class="ext-card">
+      <div class="ext-title">CARIFORUM Secretariat</div>
+      <div class="ext-items">Regional mandate for EPA utilisation · RESET positioned as the SME EPA utilisation tool the Secretariat has sought since 2008 · Regional programme contract opportunity</div>
+    </div>
+    <div class="ext-card">
+      <div class="ext-title">JAMPRO / MICAF</div>
+      <div class="ext-items">Export facilitation mandate aligns with Export Readiness Assessment · Government programme contract to deliver formal assessments for Jamaican exporters · Referral pipeline both ways</div>
+    </div>
+    <div class="ext-card">
+      <div class="ext-title">CARICOM Secretariat</div>
+      <div class="ext-items">CSME implementation support · Location Intelligence Engine across all CARICOM member states · Regional programme contract for standardised business intelligence delivery</div>
+    </div>
+  </div>
+
+  <!-- PHASE ROADMAP -->
+  <div class="roadmap">
+    <div class="roadmap-label">Four-phase development roadmap</div>
+    <div class="roadmap-grid">
+      <div class="phase ph1">
+        <div class="phase-label">Phase 1 — Months 1–4</div>
+        <div class="phase-detail">Trade Agreement Navigator live · EPA Intelligence Centre (goods &amp; services) · Export Readiness Assessment · National intelligence: Jamaica, Barbados, Trinidad · Procurement Intelligence Brief integration</div>
+      </div>
+      <div class="phase ph2">
+        <div class="phase-label">Phase 2 — Months 5–9</div>
+        <div class="phase-detail">Market Access Intelligence Engine · Export Finance Navigator → AI Matching · International Procurement Gateway (UN + World Bank) · All CARICOM territories · RESET App integration</div>
+      </div>
+      <div class="phase ph3">
+        <div class="phase-label">Phase 3 — Months 10–14</div>
+        <div class="phase-detail">EU TED monitoring · EPA procurement alerts · Mode 4 navigator · Diaspora business intelligence · Haiti, Dominican Republic, Dutch Caribbean · JAMPRO + CARIFORUM contracts · EPA advisory retainer launched</div>
+      </div>
+      <div class="phase ph4">
+        <div class="phase-label">Phase 4 — Months 15–20</div>
+        <div class="phase-detail">CARICOM-Canada agreement monitoring · G2G procurement · Full diaspora and FDI layers · EU development funding secured · R&amp;PI trade research pipeline fully operational · Self-sustaining revenue model achieved</div>
+      </div>
+    </div>
+  </div>
+
+  <p style="text-align:center;font-size:11px;color:#aaa;margin-top:20px;">RESET International Trade &amp; Intelligence Platform · Ecosystem Connection Map · RESET Caribbean Foundation · Confidential</p>
+</div>
+</body></html>

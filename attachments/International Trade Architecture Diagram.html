@@ -1,0 +1,215 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>RESET International Trade & Intelligence Platform — Architecture</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:#f5f5f5;padding:24px;}
+.page{max-width:1100px;margin:0 auto;background:#fff;border-radius:16px;padding:36px;box-shadow:0 2px 20px rgba(0,0,0,0.08);}
+
+/* Header */
+.header{background:#1A3C5E;color:#fff;border-radius:12px;padding:20px 28px;margin-bottom:24px;text-align:center;border-bottom:4px solid #B8860B;}
+.header h1{font-size:clamp(18px,2.5vw,28px);font-weight:500;margin-bottom:6px;}
+.header p{font-size:clamp(12px,1.1vw,15px);opacity:0.75;}
+
+/* Engine containers */
+.engine{border-radius:14px;padding:20px;margin-bottom:20px;}
+.engine-1{background:#E1F5EE;border:2px solid #0F6E56;}
+.engine-2{background:#F0EBF8;border:2px solid #4A1580;}
+.engine-label{font-size:clamp(14px,1.4vw,18px);font-weight:500;margin-bottom:4px;}
+.engine-sub{font-size:clamp(11px,1vw,13px);color:#666;margin-bottom:16px;}
+.engine-1 .engine-label{color:#085041;}
+.engine-2 .engine-label{color:#2E0D5A;}
+
+/* Module grids */
+.modules-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+.layers-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+
+/* Module cards */
+.module{border-radius:10px;padding:14px 16px;color:#fff;}
+.mod-num{font-size:11px;font-weight:500;opacity:0.75;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
+.mod-title{font-size:clamp(13px,1.2vw,16px);font-weight:500;margin-bottom:6px;line-height:1.3;}
+.mod-detail{font-size:clamp(11px,1vw,13px);opacity:0.88;line-height:1.55;}
+
+.m-nav  {background:#1A3C5E;}
+.m-epa  {background:#B86A10;}
+.m-mkt  {background:#4A1580;}
+.m-exp  {background:#27500A;}
+.m-fin  {background:#993C1D;}
+.m-proc {background:#185FA5;}
+.m-l1   {background:#3B6D11;}
+.m-l2   {background:#0F6E56;}
+.m-l3   {background:#B86A10;}
+.m-l4   {background:#185FA5;}
+
+/* AI strip */
+.ai-strip{background:rgba(26,60,94,0.07);border:1px dashed #1A3C5E;border-radius:8px;padding:10px 16px;text-align:center;font-size:clamp(11px,1vw,13px);color:#1A3C5E;margin-bottom:8px;}
+
+/* Territory strip */
+.territory-strip{background:rgba(74,21,128,0.06);border:1px dashed #4A1580;border-radius:8px;padding:10px 16px;text-align:center;font-size:clamp(11px,1vw,13px);color:#4A1580;margin-bottom:8px;}
+
+/* Bridge arrow */
+.bridge{display:flex;align-items:center;justify-content:center;gap:16px;padding:14px 0;color:#888;}
+.bridge-line{flex:1;height:1px;background:#ddd;}
+.bridge-label{font-size:12px;white-space:nowrap;color:#999;}
+.bridge-arrows{font-size:20px;color:#B8860B;}
+
+/* Ecosystem row */
+.ecosystem-label{text-align:center;font-size:clamp(13px,1.2vw,16px);font-weight:500;color:#1A3C5E;margin-bottom:12px;}
+.ecosystem-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.eco-card{background:#F5F5F5;border:1px solid #ddd;border-radius:8px;padding:12px;text-align:center;}
+.eco-title{font-size:clamp(12px,1.1vw,14px);font-weight:500;color:#1A3C5E;margin-bottom:4px;}
+.eco-detail{font-size:clamp(10px,0.9vw,12px);color:#666;line-height:1.5;}
+
+/* Revenue strip */
+.revenue-strip{background:#1A3C5E;border-radius:10px;padding:16px 20px;margin-top:20px;color:#fff;}
+.rev-label{font-size:12px;font-weight:500;opacity:0.6;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;text-align:center;}
+.rev-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.rev-item{background:rgba(255,255,255,0.08);border-radius:6px;padding:8px 10px;font-size:11px;color:rgba(255,255,255,0.85);line-height:1.5;}
+
+/* Connect arrows between engines */
+.conn-row{display:flex;justify-content:center;padding:8px 0;}
+.conn-arrow{font-size:22px;color:#B8860B;line-height:1;}
+
+@media(max-width:860px){.modules-grid{grid-template-columns:repeat(2,1fr);}.layers-grid{grid-template-columns:repeat(2,1fr);}.ecosystem-grid{grid-template-columns:repeat(3,1fr);}.rev-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.modules-grid,.layers-grid,.ecosystem-grid,.rev-grid{grid-template-columns:1fr;}}
+</style></head><body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>RESET International Trade &amp; Intelligence Platform</h1>
+    <p>Component 6 — RESET Integrated Platform Ecosystem &nbsp;·&nbsp; Regional from day one &nbsp;·&nbsp; Technical Specification v1.0</p>
+  </div>
+
+  <!-- ENGINE 1 -->
+  <div class="engine engine-1">
+    <div class="engine-label">Engine 1 — International Trade Intelligence</div>
+    <div class="engine-sub">Six modules · AI-powered · Plain-language translation of all Caribbean trade agreements and market intelligence</div>
+
+    <div class="modules-grid">
+      <div class="module m-nav">
+        <div class="mod-num">Module 1</div>
+        <div class="mod-title">Caribbean Trade Agreement Navigator</div>
+        <div class="mod-detail">EPA · CSME · CARIFORUM-UK TEPA · CARICOM-Canada · WTO MFN Rates · Bilateral Investment Treaties · Mode 4 movement</div>
+      </div>
+      <div class="module m-epa">
+        <div class="mod-num">Module 2 — Flagship</div>
+        <div class="mod-title">EU-CARIFORUM EPA Intelligence Centre</div>
+        <div class="mod-detail">Goods: tariff lookup · Rules of origin · EUR.1 guide · SPS · Technical barriers · EU buyer intelligence — Services: all 4 modes · Mode 4 navigator — Procurement: TED monitoring · EPA thresholds · Consortium access</div>
+      </div>
+      <div class="module m-mkt">
+        <div class="mod-num">Module 3</div>
+        <div class="mod-title">Market Access Intelligence Engine</div>
+        <div class="mod-detail">Market opportunity mapping · Tariff and preference analysis · Technical standards database · Buyer intelligence · Competitive landscape · Market entry guidance</div>
+      </div>
+      <div class="module m-exp">
+        <div class="mod-num">Module 4</div>
+        <div class="mod-title">Export Readiness Assessment</div>
+        <div class="mod-detail">5 dimensions: Product quality (25%) · Supply capacity (20%) · Compliance (20%) · Financial (20%) · Management (15%) — Export Readiness Score: Green · Amber · Red · Pre-export</div>
+      </div>
+      <div class="module m-fin">
+        <div class="mod-num">Module 5</div>
+        <div class="mod-title">Export Finance Navigator</div>
+        <div class="mod-detail">Pre-shipment finance · Export credit insurance · Letters of credit · Development finance (CDB/IDB) · Diaspora investment — Connected to AI Financial Matching Engine</div>
+      </div>
+      <div class="module m-proc">
+        <div class="mod-num">Module 6</div>
+        <div class="mod-title">International Procurement Gateway</div>
+        <div class="mod-detail">UN system ($20B+) · EU TED ($500B+) · World Bank/IDB ($80B+) · JICA · USAID · FCDO · GIZ · Commonwealth · G2G procurement — Delivered via Procurement Intelligence Brief</div>
+      </div>
+    </div>
+
+    <div class="ai-strip">
+      Powered by Anthropic Claude API — plain-language translation of legal trade agreements · WTO ITC TradeMap · UN Comtrade · EU TED · UN Global Marketplace APIs — continuously updated
+    </div>
+  </div>
+
+  <!-- BRIDGE BETWEEN ENGINES -->
+  <div class="bridge">
+    <div class="bridge-line"></div>
+    <div>
+      <div style="text-align:center;font-size:20px;color:#B8860B;">⇅</div>
+      <div class="bridge-label">Trade intelligence &amp; location context feed each other continuously</div>
+    </div>
+    <div class="bridge-line"></div>
+  </div>
+
+  <!-- ENGINE 2 -->
+  <div class="engine engine-2">
+    <div class="engine-label">Engine 2 — Location-Specific Business Intelligence</div>
+    <div class="engine-sub">Four layers · AI-curated · Calibrated per territory · Regional design from day one</div>
+
+    <div class="layers-grid">
+      <div class="module m-l1">
+        <div class="mod-num">Layer 1</div>
+        <div class="mod-title">Parish / District</div>
+        <div class="mod-detail">Local business support orgs · Parish council programmes · Local procurement pipeline · Business associations · Parish economic intelligence</div>
+      </div>
+      <div class="module m-l2">
+        <div class="mod-num">Layer 2</div>
+        <div class="mod-title">National</div>
+        <div class="mod-detail">Regulatory environment · Tax incentives · Financial programmes (JAMPRO, DBJ, HEART) · National procurement pipeline · Economic intelligence — calibrated per territory</div>
+      </div>
+      <div class="module m-l3">
+        <div class="mod-num">Layer 3</div>
+        <div class="mod-title">Regional / CARICOM</div>
+        <div class="mod-detail">CARICOM-wide opportunities · Regional development programmes · CDB initiatives · Inter-Caribbean business connections · Regional economic intelligence</div>
+      </div>
+      <div class="module m-l4">
+        <div class="mod-num">Layer 4</div>
+        <div class="mod-title">International</div>
+        <div class="mod-detail">Diaspora business networks (UK, USA, Canada) · FDI signals · International development funding cycles · Global market signals · Investment opportunity alerts</div>
+      </div>
+    </div>
+
+    <div class="territory-strip">
+      <strong>Caribbean territories served from day one:</strong> Jamaica · Barbados · Trinidad &amp; Tobago · Guyana · Belize · OECS member states (Antigua, St Lucia, Grenada, Dominica, SVG, St Kitts, Montserrat) · Haiti · Dominican Republic · Dutch Caribbean (Curaçao, Aruba, Sint Maarten)
+    </div>
+    <div class="territory-strip" style="background:rgba(15,110,86,0.06);border-color:#0F6E56;color:#085041;">
+      All intelligence data → RESET Research &amp; Policy Institute pipeline for EPA utilisation studies · Trade impact research · Policy briefs to government and development partners
+    </div>
+  </div>
+
+  <!-- ECOSYSTEM CONNECTIONS -->
+  <div class="conn-row"><div style="font-size:22px;color:#B8860B;">↓</div></div>
+  <div class="ecosystem-label">RESET Integrated Platform Ecosystem — bidirectional connections</div>
+  <div class="ecosystem-grid">
+    <div class="eco-card">
+      <div class="eco-title">BSC Platform</div>
+      <div class="eco-detail">Export readiness → bankability pathway · Export finance → AI Matching Engine · Market access enriches BSC guidance</div>
+    </div>
+    <div class="eco-card">
+      <div class="eco-title">RESET SkillsHub</div>
+      <div class="eco-detail">Export readiness gaps → course recommendations · Trade compliance · Language skills · Mode 4 delivery profiling</div>
+    </div>
+    <div class="eco-card">
+      <div class="eco-title">Jobs Board</div>
+      <div class="eco-detail">International trade creates labour demand signals · Mode 4 movement creates professional services opportunities</div>
+    </div>
+    <div class="eco-card">
+      <div class="eco-title">Procurement Engine</div>
+      <div class="eco-detail">Int'l Procurement Gateway added to Briefs · EPA procurement in Passport · Consortium Builder for international bids</div>
+    </div>
+    <div class="eco-card">
+      <div class="eco-title">R&amp;PI</div>
+      <div class="eco-detail">All trade data → research pipeline · EPA utilisation studies · Trade balance analysis · Policy briefs to government</div>
+    </div>
+  </div>
+
+  <!-- REVENUE STRIP -->
+  <div class="revenue-strip">
+    <div class="rev-label">Nine revenue streams</div>
+    <div class="rev-grid">
+      <div class="rev-item">Trade Intelligence subscription · Monthly/annual access</div>
+      <div class="rev-item">Export Readiness Assessment fees · Per formal report</div>
+      <div class="rev-item">EPA Advisory Services · Retainer/contract</div>
+      <div class="rev-item">Market Entry Research · Commissioned projects</div>
+      <div class="rev-item">Export Finance Matching · Lead generation fees</div>
+      <div class="rev-item">International Procurement Alerts · Premium subscription</div>
+      <div class="rev-item">Government contracts · JAMPRO · MICAF · CARICOM</div>
+      <div class="rev-item">EU development funding · EDF · PAPED · EPA capacity building</div>
+    </div>
+  </div>
+
+  <p style="text-align:center;font-size:11px;color:#aaa;margin-top:20px;">RESET International Trade &amp; Intelligence Platform · Technical Specification v1.0 · RESET Caribbean Foundation · Confidential</p>
+</div>
+</body></html>
