@@ -17,7 +17,7 @@ function pick(map: Record<string, KnowledgeCard>, key: string | null): EngineRep
 
 const SECTOR_KEYWORDS: Record<string, string[]> = {
   agro_processing: ["sauce", "spice", "jam", "food", "beverage", "rum", "snack", "coffee", "cocoa", "farm", "agri"],
-  garments_textiles: ["garment", "textile", "clothing", "apparel", "fabric", "sewing", "fashion"],
+  garments_textiles: ["garment", "textile", "clothing", "clothes", "apparel", "fabric", "sewing", "fashion", "dress", "shirt"],
   ict_bpo: ["software", "app", "website", "tech", "call center", "call centre", "data", "bpo", "digital"],
   tourism_services: ["tour", "hotel", "resort", "hospitality", "travel", "excursion"],
   professional_services: ["consult", "accounting", "legal", "engineer", "architect", "advisory"],
@@ -107,6 +107,19 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
   if (mentionsExportToEU) {
     const sector = matchSector(q);
     if (sector) return pick(EPA_SECTORS, sector);
+    return knowledge({
+      title: "Tell me a bit more about your business",
+      summary:
+        "I couldn't match that to a specific sector yet. Is this a physical product you'd ship, or a service you'd deliver remotely or in person?",
+      points: [
+        "Agro-processing & food products",
+        "Garments & textiles",
+        "ICT & business process outsourcing",
+        "Tourism & hospitality services",
+        "Professional & consulting services",
+        "Creative industries",
+      ],
+    });
   }
 
   if (
