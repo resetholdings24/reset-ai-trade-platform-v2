@@ -396,6 +396,11 @@ export const AGREEMENTS: Record<string, KnowledgeCard> = {
       "Free movement of skilled categories of persons is being implemented over time",
       "A useful first market for many Caribbean exporters before going further afield",
     ],
+    nextSteps: [
+      "Confirm your product qualifies for a CARICOM Certificate of Origin",
+      "Check if your profession is on a CSME-approved skilled-persons category",
+      "Start with a neighbouring CARICOM market before expanding further afield",
+    ],
     related: ["rules of origin", "tariffs", "EPA"],
   },
   uk_cariforum: {
@@ -407,6 +412,11 @@ export const AGREEMENTS: Record<string, KnowledgeCard> = {
       "Rules of origin and documentation are similar to the EU EPA",
       "Important for exporters who previously sold into the UK market",
       "Check for any product-specific differences from the EU EPA",
+    ],
+    nextSteps: [
+      "Compare your product's treatment under the UK deal versus the EU EPA",
+      "Confirm which UK-side documentation your buyer expects",
+      "Ask your customs authority about any UK-specific rule changes",
     ],
     related: ["EPA", "rules of origin"],
   },
@@ -420,6 +430,11 @@ export const AGREEMENTS: Record<string, KnowledgeCard> = {
       "Always confirm current status and product coverage",
       "Can open additional nearby markets for exporters",
     ],
+    nextSteps: [
+      "Identify whether your target country has an active arrangement with your territory",
+      "Confirm current product coverage — these can change over time",
+      "Check whether your CARICOM certificate of origin is accepted, or a separate one is needed",
+    ],
     related: ["CSME", "market access"],
   },
   preferences: {
@@ -431,6 +446,11 @@ export const AGREEMENTS: Record<string, KnowledgeCard> = {
       "Product coverage and graduation rules change over time",
       "Check eligibility and documentation requirements",
       "Can complement contractual agreements such as the EPA",
+    ],
+    nextSteps: [
+      "Confirm your country and product are still covered under the scheme",
+      "Check documentation requirements with the destination country's customs authority",
+      "Use GSP as a complement to, not a replacement for, contractual agreements like the EPA",
     ],
     related: ["tariffs", "EPA"],
   },

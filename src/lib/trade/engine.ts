@@ -20,7 +20,7 @@ const SECTOR_KEYWORDS: Record<string, string[]> = {
   garments_textiles: ["garment", "textile", "clothing", "clothes", "apparel", "fabric", "sewing", "fashion", "dress", "shirt"],
   ict_bpo: ["software", "app", "website", "tech", "call center", "call centre", "data", "bpo", "digital"],
   tourism_services: ["tour", "hotel", "resort", "hospitality", "travel", "excursion"],
-  professional_services: ["consult", "accounting", "legal", "engineer", "architect", "advisory"],
+  professional_services: ["consult", "professional", "accounting", "legal", "engineer", "architect", "advisory"],
   creative_industries: ["music", "film", "design", "art", "creative", "media", "video", "photograph"],
 };
 
@@ -190,6 +190,7 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
     q.includes("caricom") ||
     q.includes("single market") ||
     q.includes("uk-cariforum") ||
+    q.includes("bilateral") ||
     q.includes("gsp")
   ) {
     let key: string | null = null;

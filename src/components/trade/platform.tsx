@@ -376,6 +376,24 @@ function MessageView({
             </div>
           </div>
         ) : null}
+        {card.title === "Caribbean Trade Agreements Overview" ? (
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="text-xs font-medium tracking-wide text-subtle uppercase">Where do you want to sell?</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                ["CARICOM markets", "Tell me about CSME"],
+                ["United Kingdom", "Tell me about the UK-CARIFORUM trade agreement"],
+                ["European Union", "Tell me about the EU EPA"],
+                ["Nearby markets", "Tell me about bilateral trade agreements"],
+                ["Other developed markets", "Tell me about GSP preferences"],
+              ].map(([label, prompt]) => (
+                <Button key={label} type="button" variant="secondary" size="sm" onClick={() => onRelated(prompt)}>
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        ) : null}
         {card.related?.length ? (
           <div className="mt-4 flex flex-wrap gap-2">
             {card.related.map((r) => (
