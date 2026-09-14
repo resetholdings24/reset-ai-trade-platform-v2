@@ -394,6 +394,23 @@ function MessageView({
             </div>
           </div>
         ) : null}
+        {card.title === "Market Access Overview" ? (
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="text-xs font-medium tracking-wide text-subtle uppercase">What do you need to figure out?</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                ["Tariffs & preferences", "Tell me about tariffs"],
+                ["Technical standards", "Tell me about technical standards"],
+                ["Finding buyers", "Tell me about buyer intelligence"],
+                ["How to enter the market", "Tell me about market entry approaches"],
+              ].map(([label, prompt]) => (
+                <Button key={label} type="button" variant="secondary" size="sm" onClick={() => onRelated(prompt)}>
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        ) : null}
         {card.related?.length ? (
           <div className="mt-4 flex flex-wrap gap-2">
             {card.related.map((r) => (
