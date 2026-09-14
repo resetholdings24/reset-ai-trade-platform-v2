@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  CircleCheck,
   Compass,
   GraduationCap,
   Handshake,
@@ -341,6 +342,40 @@ function MessageView({
             </li>
           ))}
         </ul>
+        {card.nextSteps?.length ? (
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="text-xs font-medium tracking-wide text-subtle uppercase">Next steps</p>
+            <ul className="mt-2 space-y-2 text-sm leading-relaxed">
+              {card.nextSteps.map((s) => (
+                <li key={s} className="flex gap-2">
+                  <CircleCheck className="mt-0.5 size-4 shrink-0 text-accent" strokeWidth={1.75} />
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {card.title === "EU–CARIFORUM EPA Overview" ? (
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="text-xs font-medium tracking-wide text-subtle uppercase">
+              What does your business make or do?
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                ["Agro-processing & food", "EPA guidance for agro-processing and food products"],
+                ["Garments & textiles", "EPA guidance for garments and textiles"],
+                ["ICT & BPO", "EPA guidance for ICT and BPO services"],
+                ["Tourism", "EPA guidance for tourism services"],
+                ["Professional services", "EPA guidance for professional services"],
+                ["Creative industries", "EPA guidance for creative industries"],
+              ].map(([label, prompt]) => (
+                <Button key={label} type="button" variant="secondary" size="sm" onClick={() => onRelated(prompt)}>
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        ) : null}
         {card.related?.length ? (
           <div className="mt-4 flex flex-wrap gap-2">
             {card.related.map((r) => (
