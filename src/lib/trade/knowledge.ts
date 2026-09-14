@@ -1,5 +1,5 @@
 import type { KnowledgeCard } from "./types";
-
+ 
 export const EPA: Record<string, KnowledgeCard> = {
   overview: {
     title: "EU–CARIFORUM EPA Overview",
@@ -62,7 +62,7 @@ export const EPA: Record<string, KnowledgeCard> = {
     related: ["international procurement", "TED procurement"],
   },
 };
-
+ 
 export const EPA_SECTORS: Record<string, KnowledgeCard> = {
   agro_processing: {
     title: "Agro-processing & food products",
@@ -167,7 +167,7 @@ export const EPA_SECTORS: Record<string, KnowledgeCard> = {
     related: ["EPA services"],
   },
 };
-
+ 
 export const MARKET: Record<string, KnowledgeCard> = {
   overview: {
     title: "Market Access Overview",
@@ -178,6 +178,11 @@ export const MARKET: Record<string, KnowledgeCard> = {
       "Understand technical and regulatory requirements early",
       "Identify realistic buyers and distribution channels",
       "Choose an entry approach that matches current capacity",
+    ],
+    nextSteps: [
+      "List the top 3 markets where your product has the best combination of demand and preferential access",
+      "Check tariff treatment before investing in market research",
+      "Talk to a buyer or distributor before finalising your entry approach",
     ],
     related: ["tariffs", "standards", "buyers", "market entry"],
   },
@@ -191,6 +196,11 @@ export const MARKET: Record<string, KnowledgeCard> = {
       "Always confirm the exact HS code for your product",
       "Some agricultural products still face restrictions or longer phase-outs",
     ],
+    nextSteps: [
+      "Confirm the exact HS code for your product with customs",
+      "Check whether EPA, UK-CARIFORUM or CSME preference applies to that HS code",
+      "Ask your buyer which preference scheme they expect you to use",
+    ],
     related: ["rules of origin", "EPA goods", "CSME"],
   },
   standards: {
@@ -202,6 +212,11 @@ export const MARKET: Record<string, KnowledgeCard> = {
       "Labelling, packaging and product-safety standards can block entry",
       "Certifications (organic, fair trade, ISO) open doors but take investment",
       "Start compliance work months before the first shipment",
+    ],
+    nextSteps: [
+      "Identify which certifications your target market requires before you ship",
+      "Budget time and cost for certification into your export timeline, not after",
+      "Ask your target buyer which specific standards they enforce",
     ],
     related: ["export readiness", "EPA goods"],
   },
@@ -215,6 +230,11 @@ export const MARKET: Record<string, KnowledgeCard> = {
       "Trade fairs, B2B platforms and diaspora networks are useful starting points",
       "Build the relationship before you need the order",
     ],
+    nextSteps: [
+      "Research 3-5 real importers or distributors already active in your target market",
+      "Attend or research a relevant trade fair or B2B platform for your sector",
+      "Reach out and start a relationship before you have an order ready",
+    ],
     related: ["market entry", "export finance"],
   },
   entry: {
@@ -227,10 +247,15 @@ export const MARKET: Record<string, KnowledgeCard> = {
       "Using diaspora and existing networks",
       "Start with smaller test shipments before scaling",
     ],
+    nextSteps: [
+      "Match your entry approach to your current cash and production capacity",
+      "Start with a smaller test shipment before committing to a large order",
+      "Revisit your approach as volume grows — what works at 1 container may not work at 10",
+    ],
     related: ["buyers", "export finance", "export readiness"],
   },
 };
-
+ 
 export const FINANCE: Record<string, KnowledgeCard> = {
   overview: {
     title: "Export Finance Overview",
@@ -242,6 +267,11 @@ export const FINANCE: Record<string, KnowledgeCard> = {
       "Export credit insurance reduces the risk of non-payment",
       "Letters of credit provide strong payment security",
       "Development finance institutions often have special exporter programmes",
+    ],
+    nextSteps: [
+      "Identify which stage of the export cycle your cash-flow gap actually falls in",
+      "Talk to your bank or a development finance institution before you have an urgent need",
+      "Ask what documentation (confirmed order, LC) they require to qualify",
     ],
     related: ["pre-shipment finance", "letter of credit", "credit insurance"],
   },
@@ -255,6 +285,11 @@ export const FINANCE: Record<string, KnowledgeCard> = {
       "Can come from local banks or development finance institutions",
       "Reduces the cash-flow gap between production and payment",
     ],
+    nextSteps: [
+      "Confirm you have a confirmed export order or letter of credit before applying",
+      "Compare terms across at least two local banks or development finance institutions",
+      "Factor financing costs into your export pricing from the start",
+    ],
     related: ["letter of credit", "development finance"],
   },
   post_shipment: {
@@ -266,6 +301,11 @@ export const FINANCE: Record<string, KnowledgeCard> = {
       "Can take the form of invoice discounting or factoring",
       "Improves cash flow after the goods have left the country",
       "Often linked to the strength of the buyer and the payment instrument",
+    ],
+    nextSteps: [
+      "Check if your buyer's payment terms (30-90 days) create a cash-flow gap you need to bridge",
+      "Ask your bank about invoice discounting or factoring options",
+      "Confirm the payment instrument your buyer will use before shipping",
     ],
     related: ["credit insurance", "letter of credit"],
   },
@@ -279,6 +319,11 @@ export const FINANCE: Record<string, KnowledgeCard> = {
       "Especially valuable with new markets or new buyers",
       "Available through specialised insurers and some development agencies",
     ],
+    nextSteps: [
+      "Get a quote from a specialised export credit insurer for your target market",
+      "Weigh the insurance cost against the risk of a new, unproven buyer",
+      "Ask your bank if insurance improves the finance terms they can offer",
+    ],
     related: ["post-shipment finance", "letter of credit"],
   },
   letters_of_credit: {
@@ -290,6 +335,11 @@ export const FINANCE: Record<string, KnowledgeCard> = {
       "The exporter ships goods and presents documents to the bank",
       "Payment is made if the documents comply with the LC terms",
       "Understand the exact documentation requirements before you ship",
+    ],
+    nextSteps: [
+      "Get the exact LC documentation requirements from your buyer's bank in writing",
+      "Have your bank review the LC terms before you ship, not after",
+      "Make sure your shipping documents will match the LC exactly — small mismatches cause delays",
     ],
     related: ["pre-shipment finance", "rules of origin"],
   },
@@ -303,10 +353,15 @@ export const FINANCE: Record<string, KnowledgeCard> = {
       "Sometimes combined with technical assistance",
       "Check regularly — facilities open and close",
     ],
+    nextSteps: [
+      "Check current facilities at the Caribbean Development Bank and your national development bank",
+      "Ask if technical assistance is bundled with the financing",
+      "Reapply or check back regularly — facility availability changes",
+    ],
     related: ["export finance", "export readiness"],
   },
 };
-
+ 
 export const PROCUREMENT: Record<string, KnowledgeCard> = {
   overview: {
     title: "International Procurement Overview",
@@ -318,6 +373,11 @@ export const PROCUREMENT: Record<string, KnowledgeCard> = {
       "World Bank, IDB and CDB projects create regional opportunities",
       "Bilateral agencies (USAID, FCDO, GIZ, JICA) also procure regularly",
       "Registration, compliance and timely monitoring are essential",
+    ],
+    nextSteps: [
+      "Identify which of the five procurement channels best fits your sector",
+      "Complete supplier registration on the relevant portal before a tender you want appears",
+      "Build a compliance checklist — most bids are disqualified on paperwork, not price",
     ],
     related: ["TED procurement", "UN procurement", "development banks"],
   },
@@ -331,6 +391,11 @@ export const PROCUREMENT: Record<string, KnowledgeCard> = {
       "Monitor regularly — deadlines are strict",
       "EPA provisions improve access for Caribbean firms",
     ],
+    nextSteps: [
+      "Set up a saved search on TED for your sector and country",
+      "Confirm your EPA-derived eligibility for the specific contract value threshold",
+      "Prepare standard compliance documents in advance so you can respond quickly",
+    ],
     related: ["EPA procurement", "international procurement"],
   },
   un: {
@@ -342,6 +407,11 @@ export const PROCUREMENT: Record<string, KnowledgeCard> = {
       "Agencies include UNDP, UNICEF, WHO, WFP and many others",
       "Registration is free and opens access to tenders",
       "Particularly relevant for goods, logistics and professional services",
+    ],
+    nextSteps: [
+      "Register on UN Global Marketplace (UNGM) — it's free",
+      "Identify which UN agencies buy what your business offers",
+      "Watch for open tenders matching your registered categories",
     ],
     related: ["international procurement"],
   },
@@ -355,6 +425,11 @@ export const PROCUREMENT: Record<string, KnowledgeCard> = {
       "Many tenders are published on the banks’ own portals",
       "Consortium approaches help smaller firms compete",
     ],
+    nextSteps: [
+      "Check the specific bank's (World Bank, IDB, CDB) own procurement portal for open tenders",
+      "Consider a consortium with other regional firms if a contract is larger than you can handle alone",
+      "Follow project pipelines, not just live tenders — bid early relationships matter",
+    ],
     related: ["development finance", "international procurement"],
   },
   bilateral: {
@@ -367,10 +442,15 @@ export const PROCUREMENT: Record<string, KnowledgeCard> = {
       "Monitoring agency portals is necessary",
       "Partnerships with larger firms can improve chances of success",
     ],
+    nextSteps: [
+      "Check which bilateral agency is active in your country and sector right now",
+      "Look for partnership opportunities with larger, already-registered firms",
+      "Monitor agency portals directly — these opportunities move fast",
+    ],
     related: ["international procurement"],
   },
 };
-
+ 
 export const AGREEMENTS: Record<string, KnowledgeCard> = {
   overview: {
     title: "Caribbean Trade Agreements Overview",
@@ -455,7 +535,7 @@ export const AGREEMENTS: Record<string, KnowledgeCard> = {
     related: ["tariffs", "EPA"],
   },
 };
-
+ 
 export const AGENTS: Record<
   string,
   { id: "guidance" | "consulting" | "training" | "marketplace"; label: string; role: string; description: string }
@@ -485,7 +565,7 @@ export const AGENTS: Record<
     description: "Buyers, tenders, and matching into live opportunities.",
   },
 };
-
+ 
 export const TOOLS = [
   { id: "readiness", label: "Export Readiness", prompt: "export readiness" },
   { id: "epa", label: "EPA Guidance", prompt: "Tell me about the EPA" },
@@ -494,3 +574,14 @@ export const TOOLS = [
   { id: "procurement", label: "Procurement", prompt: "Tell me about international procurement" },
   { id: "agreements", label: "Trade Agreements", prompt: "Tell me about Caribbean trade agreements" },
 ] as const;
+ 
+
+
+
+
+
+
+
+
+
+
