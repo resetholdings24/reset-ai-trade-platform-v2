@@ -63,6 +63,111 @@ export const EPA: Record<string, KnowledgeCard> = {
   },
 };
 
+export const EPA_SECTORS: Record<string, KnowledgeCard> = {
+  agro_processing: {
+    title: "Agro-processing & food products",
+    summary:
+      "Processed food and beverage products generally qualify for EPA duty-free access if they meet rules of origin, but often also face EU food safety (SPS) requirements.",
+    points: [
+      "Your product must be sufficiently worked or processed in CARIFORUM to count as originating",
+      "EU Sanitary and Phytosanitary (SPS) standards apply on top of tariff preference",
+      "Labelling, ingredient traceability and packaging rules are often the real barrier, not the tariff",
+      "You'll need a EUR.1 certificate from customs to claim preference at the EU border",
+    ],
+    nextSteps: [
+      "Confirm your product's HS code with your territory's customs authority",
+      "Check EU import requirements for your specific food category",
+      "Speak to an EPA-experienced customs broker before your first shipment",
+    ],
+    related: ["rules of origin", "market access"],
+  },
+  garments_textiles: {
+    title: "Garments & textiles",
+    summary:
+      "Textile and apparel rules of origin are stricter than most goods categories — typically requiring the product to be made from CARIFORUM (or cumulation-eligible) fabric, not just cut and sewn there.",
+    points: [
+      "Simple cut-and-sew from imported fabric usually does not qualify on its own",
+      "Cumulation with other CARIFORUM states can help meet origin thresholds",
+      "Double-transformation rules are common in this sector",
+      "Design and branding value doesn't count toward origin — the transformation of materials does",
+    ],
+    nextSteps: [
+      "Map your supply chain: where is your fabric sourced from?",
+      "Ask about cumulation options if your fabric isn't CARIFORUM-origin",
+      "Get an origin pre-assessment before quoting EU buyers",
+    ],
+    related: ["rules of origin", "export finance"],
+  },
+  ict_bpo: {
+    title: "ICT & business process outsourcing",
+    summary:
+      "Digital services delivered remotely fall under Mode 1 — cross-border supply — one of the most open categories in the EPA.",
+    points: [
+      "Mode 1 has the fewest EU market-access restrictions of the four modes",
+      "No physical presence in the EU is required to serve EU clients",
+      "Data protection (GDPR) compliance matters more than trade barriers here",
+      "Cross-border invoicing and tax treatment is usually the main practical friction, not the EPA",
+    ],
+    nextSteps: [
+      "Confirm your business is set up to invoice EU clients",
+      "Review GDPR basics if you'll handle EU customer data",
+      "Explore EU digital services directories or B2B platforms to find buyers",
+    ],
+    related: ["EPA services"],
+  },
+  tourism_services: {
+    title: "Tourism & hospitality services",
+    summary:
+      "Tourism-related services mainly involve Mode 2 — EU consumers travelling to consume the service in the Caribbean.",
+    points: [
+      "Mode 2 (consumption abroad) is the natural fit for most Caribbean tourism SMEs",
+      "EPA commitments here mainly support market access and non-discrimination for EU-linked promotion",
+      "Standards and certification are usually set nationally, not by the EPA",
+      "Mode 3 (an EU-based presence) is more relevant for larger regional tourism groups",
+    ],
+    nextSteps: [
+      "Focus on EU-facing marketing and distribution channels",
+      "Check if your national tourism board has EU market access support",
+      "Consider Mode 4 options for staff attending EU trade shows",
+    ],
+    related: ["market access"],
+  },
+  professional_services: {
+    title: "Professional & consulting services",
+    summary:
+      "Independent professionals may be able to work temporarily in the EU under Mode 4 commitments — one of the EPA's most valuable, and most underused, provisions for Caribbean talent.",
+    points: [
+      "Mode 4 allows temporary movement of specific categories of skilled professionals",
+      "Coverage varies by profession and EU member state — it isn't a blanket right to work in the EU",
+      "Recognition of qualifications is often the real barrier, not immigration law",
+      "Both contractual service supplier and independent professional categories exist under the EPA",
+    ],
+    nextSteps: [
+      "Check whether your profession is listed in the EPA's Mode 4 schedules",
+      "Look into qualification recognition for your target EU country",
+      "Get a Mode 4 eligibility check before committing to travel plans",
+    ],
+    related: ["EPA services"],
+  },
+  creative_industries: {
+    title: "Creative industries",
+    summary:
+      "Music, film, and design work can qualify under Mode 1 (digital delivery) or Mode 4 (performers and artists travelling to the EU), depending on how the work is delivered.",
+    points: [
+      "Digital delivery of creative work falls under Mode 1",
+      "Live performance or in-person production work falls under Mode 4",
+      "IP protection in the EU market is a separate but important consideration",
+      "Cultural cooperation provisions in the EPA can support market entry for Caribbean creatives",
+    ],
+    nextSteps: [
+      "Clarify whether your work will be delivered digitally or in-person in the EU",
+      "Register your IP or copyright before entering EU markets",
+      "Look into EU cultural exchange or co-production programmes",
+    ],
+    related: ["EPA services"],
+  },
+};
+
 export const MARKET: Record<string, KnowledgeCard> = {
   overview: {
     title: "Market Access Overview",

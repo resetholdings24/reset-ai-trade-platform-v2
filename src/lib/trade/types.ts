@@ -5,6 +5,7 @@ export type KnowledgeCard = {
   summary: string;
   points: string[];
   related?: string[];
+  nextSteps?: string[];
 };
 
 export type AssessmentResult = {

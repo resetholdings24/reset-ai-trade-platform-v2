@@ -1,4 +1,4 @@
-import { AGREEMENTS, EPA, FINANCE, MARKET, PROCUREMENT } from "./knowledge";
+import { AGREEMENTS, EPA, EPA_SECTORS, FINANCE, MARKET, PROCUREMENT } from "./knowledge";
 import type { EngineReply, KnowledgeCard } from "./types";
 import { isReadinessStart, nextDimension, parseScore, scoreAssessment } from "./assessment";
 
@@ -13,6 +13,22 @@ function knowledge(card: KnowledgeCard): EngineReply {
 
 function pick(map: Record<string, KnowledgeCard>, key: string | null): EngineReply {
   return knowledge(map[key ?? "overview"] ?? map.overview);
+}
+
+const SECTOR_KEYWORDS: Record<string, string[]> = {
+  agro_processing: ["sauce", "spice", "jam", "food", "beverage", "rum", "snack", "coffee", "cocoa", "farm", "agri"],
+  garments_textiles: ["garment", "textile", "clothing", "apparel", "fabric", "sewing", "fashion"],
+  ict_bpo: ["software", "app", "website", "tech", "call center", "call centre", "data", "bpo", "digital"],
+  tourism_services: ["tour", "hotel", "resort", "hospitality", "travel", "excursion"],
+  professional_services: ["consult", "accounting", "legal", "engineer", "architect", "advisory"],
+  creative_industries: ["music", "film", "design", "art", "creative", "media", "video", "photograph"],
+};
+
+function matchSector(q: string): string | null {
+  for (const [sector, keywords] of Object.entries(SECTOR_KEYWORDS)) {
+    if (keywords.some((kw) => q.includes(kw))) return sector;
+  }
+  return null;
 }
 
 export function routeQuery(raw: string, assessment: AssessmentState): EngineReply {
@@ -74,12 +90,23 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
     q.includes("eur.1") ||
     q.includes("eur1")
   ) {
+    const sector = matchSector(q);
+    if (sector) return pick(EPA_SECTORS, sector);
+
     let key: string | null = null;
     if (q.includes("goods")) key = "goods";
     else if (q.includes("services") || q.includes("mode 4")) key = "services";
     else if (q.includes("origin") || q.includes("eur")) key = "rules_of_origin";
     else if (q.includes("procurement") || q.includes("tender")) key = "procurement";
     return pick(EPA, key);
+  }
+
+  const mentionsExportToEU =
+    (q.includes("eu") || q.includes("europe")) &&
+    (q.includes("export") || q.includes("sell") || q.includes("qualify") || q.includes("eligible"));
+  if (mentionsExportToEU) {
+    const sector = matchSector(q);
+    if (sector) return pick(EPA_SECTORS, sector);
   }
 
   if (
