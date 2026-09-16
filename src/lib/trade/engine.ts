@@ -1,4 +1,4 @@
-import { AGREEMENTS, EPA, EPA_SECTORS, FINANCE, MARKET, PROCUREMENT } from "./knowledge";
+import { AGREEMENTS, EPA, EPA_SECTORS, FINANCE, MARKET, PROCUREMENT, TERRITORIES } from "./knowledge";
 import type { EngineReply, KnowledgeCard } from "./types";
 import { isReadinessStart, nextDimension, parseScore, scoreAssessment } from "./assessment";
 
@@ -9,6 +9,20 @@ export type AssessmentState = {
 
 function knowledge(card: KnowledgeCard): EngineReply {
   return { kind: "knowledge", card };
+}
+
+const TERRITORY_KEYWORDS: Record<string, string[]> = {
+  jamaica: ["jamaica", "kingston"],
+  barbados: ["barbados", "bridgetown"],
+  trinidad_tobago: ["trinidad", "tobago", "port of spain"],
+  guyana: ["guyana", "georgetown"],
+};
+
+function matchTerritory(q: string): string | null {
+  for (const [territory, keywords] of Object.entries(TERRITORY_KEYWORDS)) {
+    if (keywords.some((kw) => q.includes(kw))) return territory;
+  }
+  return null;
 }
 
 function pick(map: Record<string, KnowledgeCard>, key: string | null): EngineReply {
@@ -200,6 +214,9 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
     else if (q.includes("gsp") || q.includes("preference")) key = "preferences";
     return pick(AGREEMENTS, key);
   }
+
+  const territory = matchTerritory(q);
+  if (territory) return pick(TERRITORIES, territory);
 
   return { kind: "ai" };
 }

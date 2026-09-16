@@ -65,6 +65,22 @@ export function TradePlatform() {
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
   const [assessment, setAssessment] = useState<AssessmentState>({ active: false, answers: {} });
+  const [territory, setTerritory] = useState<string | null>(null);
+
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? window.localStorage.getItem("reset-trade-territory") : null;
+    if (saved) setTerritory(saved);
+  }, []);
+
+  function chooseTerritory(id: string, label: string) {
+    setTerritory(id);
+    try {
+      window.localStorage.setItem("reset-trade-territory", id);
+    } catch {
+      // ignore storage errors (e.g. private browsing)
+    }
+    send(`Tell me about ${label}`);
+  }
   const scroller = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -240,22 +256,52 @@ export function TradePlatform() {
         <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 lg:px-8 lg:py-6">
           <div className="mx-auto flex max-w-2xl flex-col gap-4">
             {messages.length === 1 ? (
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {TOOLS.map((t, i) => {
-                  const Icon = TOOL_ICONS[i];
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => send(t.prompt)}
-                      className="flex min-h-[5.5rem] flex-col items-start gap-2 rounded-lg border border-border bg-surface p-3 text-left transition-colors duration-150 hover:bg-elevated"
-                    >
-                      <Icon className="size-4 text-accent" strokeWidth={1.75} />
-                      <span className="text-sm font-medium leading-snug">{t.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <>
+                <div className="rounded-lg border border-border bg-surface p-3">
+                  <p className="text-xs font-medium tracking-wide text-subtle uppercase">Where are you based?</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {[
+                      ["jamaica", "Jamaica"],
+                      ["barbados", "Barbados"],
+                      ["trinidad_tobago", "Trinidad and Tobago"],
+                      ["guyana", "Guyana"],
+                    ].map(([id, label]) => (
+                      <Button
+                        key={id}
+                        type="button"
+                        variant={territory === id ? "default" : "secondary"}
+                        size="sm"
+                        onClick={() => chooseTerritory(id, label)}
+                      >
+                        {label}
+                      </Button>
+                    ))}
+                  </div>
+                  {territory ? (
+                    <p className="mt-2 text-xs text-muted">
+                      Showing territory-specific guidance for{" "}
+                      {territory === "trinidad_tobago" ? "Trinidad and Tobago" : territory.charAt(0).toUpperCase() + territory.slice(1)}{" "}
+                      where available.
+                    </p>
+                  ) : null}
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {TOOLS.map((t, i) => {
+                    const Icon = TOOL_ICONS[i];
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => send(t.prompt)}
+                        className="flex min-h-[5.5rem] flex-col items-start gap-2 rounded-lg border border-border bg-surface p-3 text-left transition-colors duration-150 hover:bg-elevated"
+                      >
+                        <Icon className="size-4 text-accent" strokeWidth={1.75} />
+                        <span className="text-sm font-medium leading-snug">{t.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
             ) : null}
 
             {messages.map((msg) => (

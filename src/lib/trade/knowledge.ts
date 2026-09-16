@@ -1,5 +1,5 @@
 import type { KnowledgeCard } from "./types";
- 
+
 export const EPA: Record<string, KnowledgeCard> = {
   overview: {
     title: "EU–CARIFORUM EPA Overview",
@@ -62,7 +62,7 @@ export const EPA: Record<string, KnowledgeCard> = {
     related: ["international procurement", "TED procurement"],
   },
 };
- 
+
 export const EPA_SECTORS: Record<string, KnowledgeCard> = {
   agro_processing: {
     title: "Agro-processing & food products",
@@ -167,7 +167,7 @@ export const EPA_SECTORS: Record<string, KnowledgeCard> = {
     related: ["EPA services"],
   },
 };
- 
+
 export const MARKET: Record<string, KnowledgeCard> = {
   overview: {
     title: "Market Access Overview",
@@ -255,7 +255,7 @@ export const MARKET: Record<string, KnowledgeCard> = {
     related: ["buyers", "export finance", "export readiness"],
   },
 };
- 
+
 export const FINANCE: Record<string, KnowledgeCard> = {
   overview: {
     title: "Export Finance Overview",
@@ -361,7 +361,7 @@ export const FINANCE: Record<string, KnowledgeCard> = {
     related: ["export finance", "export readiness"],
   },
 };
- 
+
 export const PROCUREMENT: Record<string, KnowledgeCard> = {
   overview: {
     title: "International Procurement Overview",
@@ -450,7 +450,7 @@ export const PROCUREMENT: Record<string, KnowledgeCard> = {
     related: ["international procurement"],
   },
 };
- 
+
 export const AGREEMENTS: Record<string, KnowledgeCard> = {
   overview: {
     title: "Caribbean Trade Agreements Overview",
@@ -535,7 +535,74 @@ export const AGREEMENTS: Record<string, KnowledgeCard> = {
     related: ["tariffs", "EPA"],
   },
 };
- 
+
+export const TERRITORIES: Record<string, KnowledgeCard> = {
+  jamaica: {
+    title: "Jamaica",
+    summary:
+      "Jamaica is a CARIFORUM and CARICOM member state, with its own customs authority, trade board and dedicated trade information portal.",
+    points: [
+      "Customs authority: Jamaica Customs Agency (JCA) — jacustoms.gov.jm",
+      "Export certification: Trade Board Limited, under the Ministry of Industry, Commerce, Agriculture and Fisheries",
+      "National trade information: Jamaica Trade Information Portal (JTIP)",
+      "Export promotion: JAMPRO",
+    ],
+    nextSteps: [
+      "Register your business and product category with the Trade Board for export certification",
+      "Check the Jamaica Trade Information Portal for HS-code-specific requirements",
+      "Contact JAMPRO for export readiness and market entry support programmes",
+    ],
+    related: ["EPA", "CSME"],
+  },
+  barbados: {
+    title: "Barbados",
+    summary: "Barbados is a CARIFORUM and CARICOM member state with its own customs and revenue administration.",
+    points: [
+      "Customs authority: Barbados Customs and Excise Department (BCED) — customs.gov.bb",
+      "Revenue administration: Barbados Revenue Authority (BRA)",
+      "National trade information: Barbados Trade Information Portal (BTIP)",
+    ],
+    nextSteps: [
+      "Check the Barbados Trade Information Portal for your product's specific import/export requirements",
+      "Confirm which permits or licences your product category needs before shipping",
+      "Contact BCED directly for customs registration if you haven't exported before",
+    ],
+    related: ["EPA", "CSME"],
+  },
+  trinidad_tobago: {
+    title: "Trinidad and Tobago",
+    summary:
+      "Trinidad and Tobago is a CARIFORUM and CARICOM member state, with customs and trade licensing handled by separate government bodies.",
+    points: [
+      "Customs authority: Customs and Excise Division, Ministry of Finance — customs.gov.tt",
+      "Trade licensing: Trade Licence Unit, Ministry of Trade, Investment and Tourism",
+      "Digital trade platform: TTBizLink single-window system",
+    ],
+    nextSteps: [
+      "Check whether your product is on the Import or Export Negative List with the Trade Licence Unit",
+      "Register on TTBizLink for streamlined licence and permit applications",
+      "Engage a licensed customs broker for your first export shipment",
+    ],
+    related: ["EPA", "CSME"],
+  },
+  guyana: {
+    title: "Guyana",
+    summary: "Guyana is a CARIFORUM and CARICOM member state, with customs and trade functions integrated under its national revenue authority.",
+    points: [
+      "Customs authority: Guyana Revenue Authority (GRA), Customs, Excise & Trade Operations division — gra.gov.gy",
+      "Export declarations processed through ASYCUDA World",
+      "Investment and export facilitation: Guyana Office for Investment (Go-Invest)",
+      "Electronic single window: Guyana Trade Network (GTN)",
+    ],
+    nextSteps: [
+      "Contact Go-Invest before your first export to understand the process end-to-end",
+      "Register as an exporter under the EU Registered Exporter (REX) system if targeting the EU",
+      "Use the Guyana Trade Network to track permits, licences and declarations in one place",
+    ],
+    related: ["EPA", "CSME"],
+  },
+};
+
 export const AGENTS: Record<
   string,
   { id: "guidance" | "consulting" | "training" | "marketplace"; label: string; role: string; description: string }
@@ -565,7 +632,7 @@ export const AGENTS: Record<
     description: "Buyers, tenders, and matching into live opportunities.",
   },
 };
- 
+
 export const TOOLS = [
   { id: "readiness", label: "Export Readiness", prompt: "export readiness" },
   { id: "epa", label: "EPA Guidance", prompt: "Tell me about the EPA" },
@@ -574,14 +641,3 @@ export const TOOLS = [
   { id: "procurement", label: "Procurement", prompt: "Tell me about international procurement" },
   { id: "agreements", label: "Trade Agreements", prompt: "Tell me about Caribbean trade agreements" },
 ] as const;
- 
-
-
-
-
-
-
-
-
-
-
