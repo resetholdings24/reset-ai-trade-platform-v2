@@ -463,7 +463,7 @@ export const AGREEMENTS: Record<string, KnowledgeCard> = {
       "GSP and similar schemes can offer additional unilateral preferences",
       "Always check rules of origin and current product coverage",
     ],
-    related: ["CSME", "EPA", "UK-CARIFORUM"],
+    related: ["CSME", "EPA", "UK-CARIFORUM", "regional intelligence"],
   },
   csme: {
     title: "CARICOM Single Market and Economy (CSME)",
@@ -600,6 +600,184 @@ export const TERRITORIES: Record<string, KnowledgeCard> = {
       "Use the Guyana Trade Network to track permits, licences and declarations in one place",
     ],
     related: ["EPA", "CSME"],
+  },
+};
+
+export const REGIONAL: Record<string, KnowledgeCard> = {
+  overview: {
+    title: "Regional Intelligence (CARICOM and Caribbean)",
+    summary:
+      "Beyond your own territory, opportunities and risks move across the wider Caribbean — regional contracts, CARICOM programmes, and inter-territory supply chains that a single-country view would miss.",
+    points: [
+      "CARICOM business opportunities: regional contracts, inter-Caribbean supply chains",
+      "Regional regulatory developments: new CARICOM standards and rule changes",
+      "Regional development programmes: CDB, CARICOM Secretariat, CARIFORUM funding",
+      "Inter-Caribbean business connections: suppliers, partners and buyers in other CARICOM states",
+      "Regional economic intelligence: which territories are growing and what they need",
+    ],
+    related: ["CARICOM opportunities", "regional funding", "inter-Caribbean connections", "international intelligence"],
+  },
+  opportunities: {
+    title: "CARICOM Business Opportunities",
+    summary:
+      "CARICOM-wide procurement, the CARICOM Secretariat's own programmes, and inter-Caribbean supply chains open doors beyond your home market.",
+    points: [
+      "Some CARICOM and regional development bank contracts are open to suppliers from any member state",
+      "The CARICOM Secretariat (headquartered in Georgetown, Guyana) runs its own programmes and initiatives businesses can engage with",
+      "Regional trade statistics can show you which CARICOM markets are actually importing what you sell",
+      "Inter-Caribbean supply chains are often overlooked in favour of extra-regional markets",
+    ],
+    nextSteps: [
+      "Check CARICOM Secretariat's website for current calls for proposals or programmes relevant to your sector",
+      "Look at UN Comtrade or CARICOM trade statistics for which member states import your product category",
+      "Identify one neighbouring CARICOM market as a lower-risk test before going further afield",
+    ],
+    related: ["CSME", "regional funding"],
+  },
+  regulatory: {
+    title: "Regional Regulatory Developments",
+    summary:
+      "CARICOM standards and rules evolve, and staying current avoids costly surprises when trading across the region.",
+    points: [
+      "CARICOM Regional Organisation for Standards and Quality (CROSQ) develops regional standards",
+      "Harmonisation efforts aim to reduce technical barriers between CARICOM states over time",
+      "Rule changes can affect rules of origin, standards, or CSME implementation — worth checking periodically",
+    ],
+    nextSteps: [
+      "Check CROSQ's published standards for your product category",
+      "Ask your national bureau of standards whether any CARICOM harmonisation changes affect you",
+      "Revisit this before any major regional expansion, since rules can shift",
+    ],
+    related: ["CSME", "rules of origin"],
+  },
+  funding: {
+    title: "Regional Development Programmes",
+    summary:
+      "The Caribbean Development Bank (CDB) and CARICOM-linked bodies run region-wide funding and technical assistance programmes for private sector growth.",
+    points: [
+      "CDB (headquartered in Barbados) runs CDB PROPEL, its flagship MSME technical assistance programme, alongside lines of credit delivered through national development finance institutions",
+      "CDB's Special Development Fund (SDF) cycles fund specific technical assistance and training initiatives — current cycles run in multi-year phases",
+      "CARIFORUM development funding is often linked to EPA implementation and capacity building",
+      "Programme availability changes — always confirm current eligibility rather than relying on older information",
+    ],
+    nextSteps: [
+      "Check CDB's website (caribank.org) for current CDB PROPEL calls for proposals",
+      "Ask your national development bank whether it currently has an active CDB line of credit for on-lending to SMEs",
+      "Watch for CARIFORUM capacity-building funding tied to EPA implementation",
+    ],
+    related: ["development finance", "EPA"],
+  },
+  connections: {
+    title: "Inter-Caribbean Business Connections",
+    summary:
+      "Suppliers, partners, distributors and buyers in other CARICOM territories can be a lower-risk first step before targeting markets further afield.",
+    points: [
+      "Regional business networks and trade missions connect businesses across CARICOM states",
+      "Diaspora and existing personal networks are often the fastest way to find a first regional partner",
+      "Regional trade fairs are a practical way to meet buyers and partners in one place",
+    ],
+    nextSteps: [
+      "Identify one target CARICOM territory and research its chamber of commerce or trade association",
+      "Ask your existing network for introductions before cold outreach",
+      "Look for the next regional trade fair or CARICOM business forum relevant to your sector",
+    ],
+    related: ["CSME", "market access"],
+  },
+  economy: {
+    title: "Regional Economic Intelligence",
+    summary:
+      "Understanding which Caribbean economies are growing, and in what sectors, helps you spot where regional demand for your product or service is rising.",
+    points: [
+      "Growth rates and sector performance vary significantly across CARICOM territories",
+      "A territory's growing sector often signals rising demand for related inputs and services",
+      "Regional economic differences can be a source of opportunity, not just risk",
+    ],
+    nextSteps: [
+      "Check CDB's annual economic review for regional growth comparisons",
+      "Identify which CARICOM territory's growing sector most closely matches what you sell",
+      "Revisit this periodically — regional growth patterns shift year to year",
+    ],
+    related: ["market access"],
+  },
+};
+
+export const INTERNATIONAL: Record<string, KnowledgeCard> = {
+  overview: {
+    title: "International Intelligence",
+    summary:
+      "Beyond the Caribbean region, diaspora networks, foreign investment signals, international funding cycles, and global market shifts all create opportunities and risks worth tracking.",
+    points: [
+      "Diaspora business intelligence: Caribbean diaspora networks in the UK, USA and Canada",
+      "Foreign direct investment signals: which international companies are eyeing the Caribbean",
+      "International development funding cycles: JICA, EU, World Bank and IDB programme timing",
+      "Global market signals: commodity prices, supply chains, and policy shifts affecting Caribbean trade",
+    ],
+    related: ["diaspora networks", "development funding", "global market signals", "regional intelligence"],
+  },
+  diaspora: {
+    title: "Diaspora Business Intelligence",
+    summary:
+      "Caribbean diaspora communities in the UK, USA and Canada represent both a consumer market and a source of investment, trade connections and market access support.",
+    points: [
+      "Diaspora consumer demand for Caribbean products (food, culture, services) is a real and often underused market",
+      "Diaspora business networks and associations exist in most major UK, US and Canadian cities with Caribbean communities",
+      "Diaspora investors sometimes provide equity, trade credit, or market introductions for Caribbean businesses they have ties to",
+    ],
+    nextSteps: [
+      "Identify Caribbean diaspora business associations in your target city or country",
+      "Consider whether your product has natural diaspora market appeal before investing in a wider international launch",
+      "Ask your own diaspora network (family, alumni, former colleagues) for introductions before cold outreach",
+    ],
+    related: ["export readiness", "market access"],
+  },
+  fdi: {
+    title: "Foreign Direct Investment Signals",
+    summary:
+      "Knowing which international companies are considering investment in the Caribbean can reveal local supply chain opportunities before they're widely known.",
+    points: [
+      "New foreign investment often creates local demand for suppliers, services and skilled labour",
+      "Investment promotion agencies (like JAMPRO in Jamaica, Invest Barbados, and their national equivalents) are the best early source of this intelligence",
+      "Positioning early, before an investment is publicly announced, is a genuine competitive advantage — but requires active relationship-building with investment promotion agencies",
+    ],
+    nextSteps: [
+      "Register your business with your national investment promotion agency's supplier database, if one exists",
+      "Ask your investment promotion agency directly what sectors are seeing active foreign investment interest",
+      "Position your business as investment-ready — clear capacity, quality and compliance credentials",
+    ],
+    related: ["export readiness"],
+  },
+  funding_cycles: {
+    title: "International Development Funding Cycles",
+    summary:
+      "Bilateral and multilateral donors run funding in cycles — knowing when programmes open lets you prepare and position ahead of the crowd, rather than reacting after launch.",
+    points: [
+      "Major donors active in the Caribbean include the EU, World Bank, IDB, JICA (Japan), USAID, GIZ (Germany) and FCDO (UK)",
+      "Country strategies and programme cycles are usually published in advance — the information exists, but is scattered across donor websites",
+      "The EU in particular funds EPA capacity building through mechanisms like the European Development Fund",
+    ],
+    nextSteps: [
+      "Check your national development bank or ministry of finance for currently active donor-funded programmes",
+      "Follow your relevant donor's Caribbean country strategy page for upcoming funding cycles",
+      "Prepare a standard capability statement so you can respond quickly when a relevant call opens",
+    ],
+    related: ["development finance", "EPA"],
+  },
+  market_signals: {
+    title: "Global Market Signals",
+    summary:
+      "Global events — commodity prices, supply chain shifts, climate policy, and technology change — create both risks and openings for Caribbean businesses that are watching.",
+    points: [
+      "Commodity price movements affect input costs and the competitiveness of Caribbean exports",
+      "Global supply chain disruptions have, at times, created openings for smaller or more agile suppliers",
+      "Climate policy in major markets (like the EU) is increasingly shaping demand for sustainably-produced goods",
+      "This is a genuinely fast-moving area — treat it as a lens to keep checking, not a one-time answer",
+    ],
+    nextSteps: [
+      "Identify which global commodity or input price most affects your specific product's cost base",
+      "Check whether your target market's climate or sustainability policy creates new demand for your product category",
+      "Revisit this regularly — global signals change faster than regional or national ones",
+    ],
+    related: ["market access", "export finance"],
   },
 };
 

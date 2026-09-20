@@ -1,4 +1,4 @@
-import { AGREEMENTS, EPA, EPA_SECTORS, FINANCE, MARKET, PROCUREMENT, TERRITORIES } from "./knowledge";
+import { AGREEMENTS, EPA, EPA_SECTORS, FINANCE, INTERNATIONAL, MARKET, PROCUREMENT, REGIONAL, TERRITORIES } from "./knowledge";
 import type { EngineReply, KnowledgeCard } from "./types";
 import { isReadinessStart, nextDimension, parseScore, scoreAssessment } from "./assessment";
 
@@ -217,6 +217,38 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
 
   const territory = matchTerritory(q);
   if (territory) return pick(TERRITORIES, territory);
+
+  if (
+    q.includes("regional intelligence") ||
+    q.includes("caricom opportunit") ||
+    q.includes("inter-caribbean") ||
+    q.includes("regional funding") ||
+    q.includes("regional development")
+  ) {
+    let key: string | null = null;
+    if (q.includes("opportunit")) key = "opportunities";
+    else if (q.includes("regulat") || q.includes("standard")) key = "regulatory";
+    else if (q.includes("funding") || q.includes("development")) key = "funding";
+    else if (q.includes("connection") || q.includes("partner") || q.includes("inter-caribbean")) key = "connections";
+    else if (q.includes("economic") || q.includes("economy")) key = "economy";
+    return pick(REGIONAL, key);
+  }
+
+  if (
+    q.includes("international intelligence") ||
+    q.includes("diaspora") ||
+    q.includes("foreign direct investment") ||
+    q.includes(" fdi") ||
+    q.includes("global market") ||
+    q.includes("funding cycle")
+  ) {
+    let key: string | null = null;
+    if (q.includes("diaspora")) key = "diaspora";
+    else if (q.includes("fdi") || q.includes("foreign direct investment") || q.includes("foreign investment")) key = "fdi";
+    else if (q.includes("funding cycle") || q.includes("donor")) key = "funding_cycles";
+    else if (q.includes("global market") || q.includes("commodity")) key = "market_signals";
+    return pick(INTERNATIONAL, key);
+  }
 
   return { kind: "ai" };
 }
