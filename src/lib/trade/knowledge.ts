@@ -551,6 +551,7 @@ export const TERRITORIES: Record<string, KnowledgeCard> = {
       "Register your business and product category with the Trade Board for export certification",
       "Check the Jamaica Trade Information Portal for HS-code-specific requirements",
       "Contact JAMPRO for export readiness and market entry support programmes",
+      "For local-level detail, ask about your specific parish (e.g. \"Tell me about St. James\")",
     ],
     related: ["EPA", "CSME"],
   },
@@ -778,6 +779,264 @@ export const INTERNATIONAL: Record<string, KnowledgeCard> = {
       "Revisit this regularly — global signals change faster than regional or national ones",
     ],
     related: ["market access", "export finance"],
+  },
+};
+
+export const PARISHES: Record<string, KnowledgeCard> = {
+  kingston: {
+    title: "Kingston, Jamaica",
+    summary:
+      "Local governance for Kingston is administered through the Kingston and St. Andrew Municipal Corporation (KSAMC), under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: Kingston and St. Andrew Municipal Corporation (KSAMC)",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the Kingston and St. Andrew Municipal Corporation (KSAMC) directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  st_andrew: {
+    title: "St. Andrew, Jamaica",
+    summary:
+      "Local governance for St. Andrew is administered through the Kingston and St. Andrew Municipal Corporation (KSAMC), under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: Kingston and St. Andrew Municipal Corporation (KSAMC)",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the Kingston and St. Andrew Municipal Corporation (KSAMC) directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  st_thomas: {
+    title: "St. Thomas, Jamaica",
+    summary:
+      "Local governance for St. Thomas is administered through the St. Thomas Municipal Corporation, under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: St. Thomas Municipal Corporation",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the St. Thomas Municipal Corporation directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  portland: {
+    title: "Portland, Jamaica",
+    summary:
+      "Local governance for Portland is administered through the Portland Municipal Corporation, under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: Portland Municipal Corporation",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the Portland Municipal Corporation directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  st_mary: {
+    title: "St. Mary, Jamaica",
+    summary:
+      "Local governance for St. Mary is administered through the St. Mary Municipal Corporation, under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: St. Mary Municipal Corporation",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the St. Mary Municipal Corporation directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  st_ann: {
+    title: "St. Ann, Jamaica",
+    summary:
+      "Local governance for St. Ann is administered through the St. Ann Municipal Corporation, under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: St. Ann Municipal Corporation",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the St. Ann Municipal Corporation directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  trelawny: {
+    title: "Trelawny, Jamaica",
+    summary:
+      "Local governance for Trelawny is administered through the Trelawny Municipal Corporation, under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: Trelawny Municipal Corporation",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the Trelawny Municipal Corporation directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  st_james: {
+    title: "St. James, Jamaica",
+    summary:
+      "Local governance for St. James is administered through the St. James Municipal Corporation, under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: St. James Municipal Corporation",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the St. James Municipal Corporation directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  hanover: {
+    title: "Hanover, Jamaica",
+    summary:
+      "Local governance for Hanover is administered through the Hanover Municipal Corporation, under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: Hanover Municipal Corporation",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the Hanover Municipal Corporation directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  westmoreland: {
+    title: "Westmoreland, Jamaica",
+    summary:
+      "Local governance for Westmoreland is administered through the Westmoreland Municipal Corporation, under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: Westmoreland Municipal Corporation",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the Westmoreland Municipal Corporation directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  st_elizabeth: {
+    title: "St. Elizabeth, Jamaica",
+    summary:
+      "Local governance for St. Elizabeth is administered through the St. Elizabeth Municipal Corporation, under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: St. Elizabeth Municipal Corporation",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the St. Elizabeth Municipal Corporation directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  manchester: {
+    title: "Manchester, Jamaica",
+    summary:
+      "Local governance for Manchester is administered through the Manchester Municipal Corporation, under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: Manchester Municipal Corporation",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the Manchester Municipal Corporation directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  clarendon: {
+    title: "Clarendon, Jamaica",
+    summary:
+      "Local governance for Clarendon is administered through the Clarendon Municipal Corporation, under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: Clarendon Municipal Corporation",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the Clarendon Municipal Corporation directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  st_catherine: {
+    title: "St. Catherine, Jamaica",
+    summary:
+      "Local governance for St. Catherine is administered through the St. Catherine Municipal Corporation, under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: St. Catherine Municipal Corporation",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the St. Catherine Municipal Corporation directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
+  },
+  portmore: {
+    title: "Portmore, Jamaica",
+    summary:
+      "Local governance for Portmore is administered through the Portmore Municipal Council (a separately governed municipality within St. Catherine), under the Local Governance Act, 2016.",
+    points: [
+      "Local authority: Portmore Municipal Council (a separately governed municipality within St. Catherine)",
+      "Community and business engagement runs through your Parish Development Committee (PDC), part of the national participatory governance framework",
+      "The Social Development Commission (SDC) coordinates and supports PDCs across Jamaica",
+      "Local procurement and small grants, where available, are typically administered at the municipal corporation level, not nationally",
+    ],
+    nextSteps: [
+      "Contact the Portmore Municipal Council (a separately governed municipality within St. Catherine) directly to ask what local programmes or procurement opportunities are currently open",
+      "Connect with your local PDC through the Social Development Commission to engage with community and business networks",
+      "Check with JAMPRO or the Trade Board for national programmes that complement local-level support",
+    ],
+    related: ["Jamaica", "regional intelligence"],
   },
 };
 

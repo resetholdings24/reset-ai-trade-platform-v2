@@ -1,4 +1,4 @@
-import { AGREEMENTS, EPA, EPA_SECTORS, FINANCE, INTERNATIONAL, MARKET, PROCUREMENT, REGIONAL, TERRITORIES } from "./knowledge";
+import { AGREEMENTS, EPA, EPA_SECTORS, FINANCE, INTERNATIONAL, MARKET, PARISHES, PROCUREMENT, REGIONAL, TERRITORIES } from "./knowledge";
 import type { EngineReply, KnowledgeCard } from "./types";
 import { isReadinessStart, nextDimension, parseScore, scoreAssessment } from "./assessment";
 
@@ -17,6 +17,31 @@ const TERRITORY_KEYWORDS: Record<string, string[]> = {
   trinidad_tobago: ["trinidad", "tobago", "port of spain"],
   guyana: ["guyana", "georgetown"],
 };
+
+const PARISH_KEYWORDS: Record<string, string[]> = {
+  kingston: ["kingston"],
+  st_andrew: ["st andrew", "st. andrew"],
+  st_thomas: ["st thomas", "st. thomas"],
+  portland: ["portland"],
+  st_mary: ["st mary", "st. mary"],
+  st_ann: ["st ann", "st. ann"],
+  trelawny: ["trelawny"],
+  st_james: ["st james", "st. james", "montego bay"],
+  hanover: ["hanover"],
+  westmoreland: ["westmoreland"],
+  st_elizabeth: ["st elizabeth", "st. elizabeth"],
+  manchester: ["manchester"],
+  clarendon: ["clarendon"],
+  st_catherine: ["st catherine", "st. catherine", "spanish town"],
+  portmore: ["portmore"],
+};
+
+function matchParish(q: string): string | null {
+  for (const [parish, keywords] of Object.entries(PARISH_KEYWORDS)) {
+    if (keywords.some((kw) => q.includes(kw))) return parish;
+  }
+  return null;
+}
 
 function matchTerritory(q: string): string | null {
   for (const [territory, keywords] of Object.entries(TERRITORY_KEYWORDS)) {
@@ -214,6 +239,9 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
     else if (q.includes("gsp") || q.includes("preference")) key = "preferences";
     return pick(AGREEMENTS, key);
   }
+
+  const parish = matchParish(q);
+  if (parish) return pick(PARISHES, parish);
 
   const territory = matchTerritory(q);
   if (territory) return pick(TERRITORIES, territory);
