@@ -223,23 +223,6 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
     return pick(PROCUREMENT, key);
   }
 
-  if (
-    q.includes("trade agreement") ||
-    q.includes("csme") ||
-    q.includes("caricom") ||
-    q.includes("single market") ||
-    q.includes("uk-cariforum") ||
-    q.includes("bilateral") ||
-    q.includes("gsp")
-  ) {
-    let key: string | null = null;
-    if (q.includes("csme") || q.includes("single market") || q.includes("caricom")) key = "csme";
-    else if (q.includes("uk")) key = "uk_cariforum";
-    else if (q.includes("bilateral")) key = "bilateral";
-    else if (q.includes("gsp") || q.includes("preference")) key = "preferences";
-    return pick(AGREEMENTS, key);
-  }
-
   const parish = matchParish(q);
   if (parish) return pick(PARISHES, parish);
 
@@ -247,11 +230,13 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
   if (territory) return pick(TERRITORIES, territory);
 
   if (
-    q.includes("regional intelligence") ||
     q.includes("caricom opportunit") ||
     q.includes("inter-caribbean") ||
+    q.includes("regional regulat") ||
     q.includes("regional funding") ||
-    q.includes("regional development")
+    q.includes("regional development") ||
+    q.includes("regional econom") ||
+    q.includes("regional intelligence")
   ) {
     let key: string | null = null;
     if (q.includes("opportunit")) key = "opportunities";
@@ -276,6 +261,22 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
     else if (q.includes("funding cycle") || q.includes("donor")) key = "funding_cycles";
     else if (q.includes("global market") || q.includes("commodity")) key = "market_signals";
     return pick(INTERNATIONAL, key);
+  }
+
+  if (
+    q.includes("trade agreement") ||
+    q.includes("csme") ||
+    q.includes("single market") ||
+    q.includes("uk-cariforum") ||
+    q.includes("bilateral") ||
+    q.includes("gsp")
+  ) {
+    let key: string | null = null;
+    if (q.includes("csme") || q.includes("single market")) key = "csme";
+    else if (q.includes("uk")) key = "uk_cariforum";
+    else if (q.includes("bilateral")) key = "bilateral";
+    else if (q.includes("gsp") || q.includes("preference")) key = "preferences";
+    return pick(AGREEMENTS, key);
   }
 
   return { kind: "ai" };

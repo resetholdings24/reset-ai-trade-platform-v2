@@ -5,6 +5,7 @@ import {
   GraduationCap,
   Handshake,
   Landmark,
+  MapPin,
   RotateCcw,
   Scale,
   Send,
@@ -46,6 +47,65 @@ const AGENT_ICONS: Record<AgentId, typeof Compass> = {
   marketplace: Store,
 };
 
+const LOCATION_LAYERS: {
+  id: string;
+  label: string;
+  options: { label: string; prompt: string }[];
+}[] = [
+  {
+    id: "parish",
+    label: "Layer 1 — Parish",
+    options: [
+      "Kingston",
+      "St. Andrew",
+      "St. Thomas",
+      "Portland",
+      "St. Mary",
+      "St. Ann",
+      "Trelawny",
+      "St. James",
+      "Hanover",
+      "Westmoreland",
+      "St. Elizabeth",
+      "Manchester",
+      "Clarendon",
+      "St. Catherine",
+      "Portmore",
+    ].map((label) => ({ label, prompt: `Tell me about ${label}` })),
+  },
+  {
+    id: "national",
+    label: "Layer 2 — National",
+    options: ["Jamaica", "Barbados", "Trinidad and Tobago", "Guyana"].map((label) => ({
+      label,
+      prompt: `Tell me about ${label}`,
+    })),
+  },
+  {
+    id: "regional",
+    label: "Layer 3 — Regional",
+    options: [
+      { label: "Overview", prompt: "Tell me about regional intelligence" },
+      { label: "CARICOM Opportunities", prompt: "Tell me about CARICOM opportunities" },
+      { label: "Regional Regulatory Developments", prompt: "Tell me about regional regulatory developments" },
+      { label: "Regional Development Programmes", prompt: "Tell me about regional development programmes" },
+      { label: "Inter-Caribbean Connections", prompt: "Tell me about inter-Caribbean business connections" },
+      { label: "Regional Economic Intelligence", prompt: "Tell me about regional economic intelligence" },
+    ],
+  },
+  {
+    id: "international",
+    label: "Layer 4 — International",
+    options: [
+      { label: "Overview", prompt: "Tell me about international intelligence" },
+      { label: "Diaspora Business Intelligence", prompt: "Tell me about diaspora business intelligence" },
+      { label: "Foreign Direct Investment Signals", prompt: "Tell me about foreign direct investment signals" },
+      { label: "International Development Funding Cycles", prompt: "Tell me about international development funding cycles" },
+      { label: "Global Market Signals", prompt: "Tell me about global market signals" },
+    ],
+  },
+];
+
 const TOOL_ICONS = [FileCheck, Scale, Ship, Wallet, Landmark, Compass];
 
 function uid() {
@@ -66,6 +126,7 @@ export function TradePlatform() {
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
   const [assessment, setAssessment] = useState<AssessmentState>({ active: false, answers: {} });
   const [territory, setTerritory] = useState<string | null>(null);
+  const [expandedLayer, setExpandedLayer] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? window.localStorage.getItem("reset-trade-territory") : null;
@@ -216,6 +277,43 @@ export function TradePlatform() {
                   <Icon className="size-4 shrink-0" strokeWidth={1.75} />
                   {t.label}
                 </button>
+              );
+            })}
+          </div>
+          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
+            Location Intelligence
+          </p>
+          <div className="hidden flex-col gap-1 lg:flex">
+            {LOCATION_LAYERS.map((layer) => {
+              const isOpen = expandedLayer === layer.id;
+              return (
+                <div key={layer.id}>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedLayer(isOpen ? null : layer.id)}
+                    className="flex min-h-11 w-full items-center justify-between gap-2 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+                  >
+                    <span className="flex items-center gap-3">
+                      <MapPin className="size-4 shrink-0" strokeWidth={1.75} />
+                      {layer.label}
+                    </span>
+                    <span className="text-xs text-subtle">{isOpen ? "–" : "+"}</span>
+                  </button>
+                  {isOpen ? (
+                    <div className="ml-7 flex flex-col gap-0.5 border-l border-border pl-3">
+                      {layer.options.map((opt) => (
+                        <button
+                          key={opt.label}
+                          type="button"
+                          onClick={() => send(opt.prompt)}
+                          className="rounded-md px-2 py-1.5 text-left text-xs text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               );
             })}
           </div>
