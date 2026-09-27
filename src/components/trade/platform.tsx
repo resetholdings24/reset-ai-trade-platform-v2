@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   CircleCheck,
+  ClipboardCheck,
   Compass,
   GraduationCap,
   Handshake,
@@ -17,8 +18,9 @@ import {
 import { askGrok } from "@/lib/ai/ask-grok";
 import { applyAssessment, routeQuery, type AssessmentState } from "@/lib/trade/engine";
 import { nextDimension } from "@/lib/trade/assessment";
+import { nextDomain } from "@/lib/trade/bsc-evaluation";
 import { AGENTS, TOOLS } from "@/lib/trade/knowledge";
-import type { AgentId, AssessmentResult, KnowledgeCard } from "@/lib/trade/types";
+import type { AgentId, AssessmentResult, BSCEvaluationResult, KnowledgeCard } from "@/lib/trade/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +40,8 @@ type Message =
       total: number;
       name: string;
     }
-  | { id: string; role: "assistant"; kind: "result"; result: AssessmentResult };
+  | { id: string; role: "assistant"; kind: "result"; result: AssessmentResult }
+  | { id: string; role: "assistant"; kind: "bsc-result"; result: BSCEvaluationResult };
 
 const AGENT_ICONS: Record<AgentId, typeof Compass> = {
   guidance: Compass,
@@ -124,7 +127,7 @@ export function TradePlatform() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
-  const [assessment, setAssessment] = useState<AssessmentState>({ active: false, answers: {} });
+  const [assessment, setAssessment] = useState<AssessmentState>({ active: false, kind: null, answers: {} });
   const [territory, setTerritory] = useState<string | null>(null);
   const [expandedLayer, setExpandedLayer] = useState<string | null>(null);
 
@@ -165,7 +168,13 @@ export function TradePlatform() {
       setBusy(false);
       return;
     }
-    if (reply.kind === "assessment-start" || reply.kind === "assessment-question" || reply.kind === "need-score") {
+    if (
+      reply.kind === "assessment-start" ||
+      reply.kind === "assessment-question" ||
+      reply.kind === "bsc-start" ||
+      reply.kind === "bsc-question" ||
+      reply.kind === "need-score"
+    ) {
       setMessages((m) => [
         ...m,
         {
@@ -183,6 +192,11 @@ export function TradePlatform() {
     }
     if (reply.kind === "assessment-result") {
       setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "result", result: reply.result }]);
+      setBusy(false);
+      return;
+    }
+    if (reply.kind === "bsc-result") {
+      setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "bsc-result", result: reply.result }]);
       setBusy(false);
       return;
     }
@@ -214,12 +228,17 @@ export function TradePlatform() {
 
   function reset() {
     setMessages([WELCOME]);
-    setAssessment({ active: false, answers: {} });
+    setAssessment({ active: false, kind: null, answers: {} });
     setInput("");
   }
 
   const progress = assessment.active ? Object.keys(assessment.answers).length : 0;
-  const currentDim = assessment.active ? nextDimension(assessment.answers) : null;
+  const currentDim = assessment.active
+    ? assessment.kind === "bsc"
+      ? nextDomain(assessment.answers)
+      : nextDimension(assessment.answers)
+    : null;
+  const progressTotal = assessment.kind === "bsc" ? 6 : 5;
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-fg lg:flex-row">
@@ -317,6 +336,19 @@ export function TradePlatform() {
               );
             })}
           </div>
+          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
+            BSC Bankability
+          </p>
+          <div className="hidden flex-col gap-1 lg:flex">
+            <button
+              type="button"
+              onClick={() => send("6-Domain Evaluation")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <ClipboardCheck className="size-4 shrink-0" strokeWidth={1.75} />
+              6-Domain Evaluation
+            </button>
+          </div>
         </div>
         <div className="hidden border-t border-border px-5 py-4 lg:block">
           <Button variant="ghost" size="sm" className="w-full justify-start" onClick={reset}>
@@ -340,12 +372,13 @@ export function TradePlatform() {
         {assessment.active && currentDim ? (
           <div className="border-b border-border bg-elevated/60 px-4 py-2 lg:px-8">
             <p className="text-xs text-muted">
-              Assessment {progress}/5 · {currentDim.name}
+              {assessment.kind === "bsc" ? "6-Domain Evaluation" : "Assessment"} {progress}/{progressTotal} ·{" "}
+              {currentDim.name}
             </p>
             <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-border">
               <div
                 className="h-full bg-accent transition-[width] duration-200"
-                style={{ width: `${(progress / 5) * 100}%` }}
+                style={{ width: `${(progress / progressTotal) * 100}%` }}
               />
             </div>
           </div>
@@ -612,6 +645,53 @@ function MessageView({
         <p className="mt-3 text-sm leading-relaxed text-muted">{r.message}</p>
         <div className="mt-5 space-y-3">
           {r.dimensions.map((d) => (
+            <div key={d.key}>
+              <div className="mb-1 flex justify-between text-xs text-muted">
+                <span>{d.name}</span>
+                <span className="tabular-nums">{d.score}/5</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-border">
+                <div className="h-full bg-accent" style={{ width: `${(d.score / 5) * 100}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <h3 className="mt-5 text-sm font-medium">Recommendations</h3>
+        <ul className="mt-2 space-y-2 text-sm leading-relaxed">
+          {r.recommendations.map((rec) => (
+            <li key={rec} className="flex gap-2">
+              <span className="mt-2 size-1 shrink-0 rounded-full bg-accent" />
+              <span>{rec}</span>
+            </li>
+          ))}
+        </ul>
+      </article>
+    );
+  }
+
+  if (message.kind === "bsc-result") {
+    const r = message.result;
+    const tone =
+      r.rating === "Strong"
+        ? "text-status-green border-status-green/40"
+        : r.rating === "Bankable"
+          ? "text-status-green border-status-green/40"
+          : r.rating === "Developing"
+            ? "text-status-amber border-status-amber/40"
+            : "text-status-red border-status-red/40";
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">BSC 6-Domain Evaluation</p>
+        <div className="mt-2 flex flex-wrap items-end gap-3">
+          <p className="font-display text-4xl font-medium tabular-nums tracking-tight">
+            {r.overallScore}
+            <span className="text-lg text-muted">/100</span>
+          </p>
+          <Badge className={tone}>{r.rating}</Badge>
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-muted">{r.message}</p>
+        <div className="mt-5 space-y-3">
+          {r.domains.map((d) => (
             <div key={d.key}>
               <div className="mb-1 flex justify-between text-xs text-muted">
                 <span>{d.name}</span>

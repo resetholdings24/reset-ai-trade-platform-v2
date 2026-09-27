@@ -1,9 +1,11 @@
 import { AGREEMENTS, EPA, EPA_SECTORS, FINANCE, INTERNATIONAL, MARKET, PARISHES, PROCUREMENT, REGIONAL, TERRITORIES } from "./knowledge";
 import type { EngineReply, KnowledgeCard } from "./types";
 import { isReadinessStart, nextDimension, parseScore, scoreAssessment } from "./assessment";
+import { isBSCEvaluationStart, nextDomain, scoreEvaluation } from "./bsc-evaluation";
 
 export type AssessmentState = {
   active: boolean;
+  kind: "export" | "bsc" | null;
   answers: Record<string, number>;
 };
 
@@ -75,51 +77,76 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
 
   if (assessment.active) {
     const score = parseScore(q);
-    const next = nextDimension(assessment.answers);
-    if (score != null && next) {
-      const answers = { ...assessment.answers, [next.key]: score };
-      const following = nextDimension(answers);
-      if (following) {
+
+    if (assessment.kind === "bsc") {
+      const next = nextDomain(assessment.answers);
+      if (score != null && next) {
+        const answers = { ...assessment.answers, [next.key]: score };
+        const following = nextDomain(answers);
+        if (following) {
+          return {
+            kind: "bsc-question",
+            question: following.question,
+            step: Object.keys(answers).length + 1,
+            total: 6,
+            name: following.name,
+          };
+        }
+        return { kind: "bsc-result", result: scoreEvaluation(answers) };
+      }
+      if (isReadinessStart(q)) {
+        const first = nextDimension({});
+        return { kind: "assessment-start", question: first!.question, step: 1, total: 5, name: first!.name };
+      }
+      if (next && !isOtherTool(q)) {
         return {
-          kind: "assessment-question",
-          question: following.question,
-          step: Object.keys(answers).length + 1,
-          total: 5,
-          name: following.name,
+          kind: "need-score",
+          question: next.question,
+          step: Object.keys(assessment.answers).length + 1,
+          total: 6,
+          name: next.name,
         };
       }
-      return { kind: "assessment-result", result: scoreAssessment(answers) };
-    }
-    if (isReadinessStart(q)) {
-      const first = nextDimension({});
-      return {
-        kind: "assessment-start",
-        question: first!.question,
-        step: 1,
-        total: 5,
-        name: first!.name,
-      };
-    }
-    if (next && !isOtherTool(q)) {
-      return {
-        kind: "need-score",
-        question: next.question,
-        step: Object.keys(assessment.answers).length + 1,
-        total: 5,
-        name: next.name,
-      };
+    } else {
+      const next = nextDimension(assessment.answers);
+      if (score != null && next) {
+        const answers = { ...assessment.answers, [next.key]: score };
+        const following = nextDimension(answers);
+        if (following) {
+          return {
+            kind: "assessment-question",
+            question: following.question,
+            step: Object.keys(answers).length + 1,
+            total: 5,
+            name: following.name,
+          };
+        }
+        return { kind: "assessment-result", result: scoreAssessment(answers) };
+      }
+      if (isBSCEvaluationStart(q)) {
+        const first = nextDomain({});
+        return { kind: "bsc-start", question: first!.question, step: 1, total: 6, name: first!.name };
+      }
+      if (next && !isOtherTool(q)) {
+        return {
+          kind: "need-score",
+          question: next.question,
+          step: Object.keys(assessment.answers).length + 1,
+          total: 5,
+          name: next.name,
+        };
+      }
     }
   }
 
   if (isReadinessStart(q)) {
     const first = nextDimension({});
-    return {
-      kind: "assessment-start",
-      question: first!.question,
-      step: 1,
-      total: 5,
-      name: first!.name,
-    };
+    return { kind: "assessment-start", question: first!.question, step: 1, total: 5, name: first!.name };
+  }
+
+  if (isBSCEvaluationStart(q)) {
+    const first = nextDomain({});
+    return { kind: "bsc-start", question: first!.question, step: 1, total: 6, name: first!.name };
   }
 
   if (
@@ -295,15 +322,19 @@ function isOtherTool(q: string) {
 
 export function applyAssessment(raw: string, assessment: AssessmentState): AssessmentState {
   const q = raw.toLowerCase().trim();
-  if (isReadinessStart(q)) return { active: true, answers: {} };
+
+  if (isReadinessStart(q)) return { active: true, kind: "export", answers: {} };
+  if (isBSCEvaluationStart(q)) return { active: true, kind: "bsc", answers: {} };
   if (!assessment.active) return assessment;
+
   const score = parseScore(q);
-  const next = nextDimension(assessment.answers);
+  const next = assessment.kind === "bsc" ? nextDomain(assessment.answers) : nextDimension(assessment.answers);
   if (score != null && next) {
     const answers = { ...assessment.answers, [next.key]: score };
-    if (!nextDimension(answers)) return { active: false, answers };
-    return { active: true, answers };
+    const stillNext = assessment.kind === "bsc" ? nextDomain(answers) : nextDimension(answers);
+    if (!stillNext) return { active: false, kind: null, answers };
+    return { active: true, kind: assessment.kind, answers };
   }
-  if (isOtherTool(q)) return { active: false, answers: {} };
+  if (isOtherTool(q)) return { active: false, kind: null, answers: {} };
   return assessment;
 }
