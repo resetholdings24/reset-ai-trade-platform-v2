@@ -8,6 +8,7 @@ import {
   Landmark,
   MapPin,
   RotateCcw,
+  Route,
   Scale,
   Send,
   Ship,
@@ -19,6 +20,7 @@ import { askGrok } from "@/lib/ai/ask-grok";
 import { applyAssessment, routeQuery, type AssessmentState } from "@/lib/trade/engine";
 import { nextDimension } from "@/lib/trade/assessment";
 import { nextDomain } from "@/lib/trade/bsc-evaluation";
+import { getPathwayPhases, isPathwayRequest, type PathwayPhase } from "@/lib/trade/bankability-pathway";
 import { AGENTS, TOOLS } from "@/lib/trade/knowledge";
 import type { AgentId, AssessmentResult, BSCEvaluationResult, KnowledgeCard } from "@/lib/trade/types";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +43,8 @@ type Message =
       name: string;
     }
   | { id: string; role: "assistant"; kind: "result"; result: AssessmentResult }
-  | { id: string; role: "assistant"; kind: "bsc-result"; result: BSCEvaluationResult };
+  | { id: string; role: "assistant"; kind: "bsc-result"; result: BSCEvaluationResult }
+  | { id: string; role: "assistant"; kind: "pathway"; phases: PathwayPhase[] };
 
 const AGENT_ICONS: Record<AgentId, typeof Compass> = {
   guidance: Compass,
@@ -130,6 +133,7 @@ export function TradePlatform() {
   const [assessment, setAssessment] = useState<AssessmentState>({ active: false, kind: null, answers: {} });
   const [territory, setTerritory] = useState<string | null>(null);
   const [expandedLayer, setExpandedLayer] = useState<string | null>(null);
+  const [lastBscResult, setLastBscResult] = useState<BSCEvaluationResult | null>(null);
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? window.localStorage.getItem("reset-trade-territory") : null;
@@ -158,6 +162,13 @@ export function TradePlatform() {
     const userMsg: Message = { id: uid(), role: "user", kind: "text", text: query };
     setMessages((m) => [...m, userMsg]);
     setBusy(true);
+
+    if (!assessment.active && isPathwayRequest(query.toLowerCase())) {
+      const phases = getPathwayPhases(lastBscResult);
+      setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "pathway", phases }]);
+      setBusy(false);
+      return;
+    }
 
     const nextState = applyAssessment(query, assessment);
     const reply = routeQuery(query, assessment);
@@ -196,6 +207,7 @@ export function TradePlatform() {
       return;
     }
     if (reply.kind === "bsc-result") {
+      setLastBscResult(reply.result);
       setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "bsc-result", result: reply.result }]);
       setBusy(false);
       return;
@@ -347,6 +359,14 @@ export function TradePlatform() {
             >
               <ClipboardCheck className="size-4 shrink-0" strokeWidth={1.75} />
               6-Domain Evaluation
+            </button>
+            <button
+              type="button"
+              onClick={() => send("bankability pathway")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Route className="size-4 shrink-0" strokeWidth={1.75} />
+              View My Pathway
             </button>
           </div>
         </div>
@@ -712,6 +732,65 @@ function MessageView({
             </li>
           ))}
         </ul>
+        <div className="mt-4 border-t border-border pt-4">
+          <Button type="button" variant="secondary" size="sm" onClick={() => onRelated("bankability pathway")}>
+            View Bankability Pathway
+          </Button>
+        </div>
+      </article>
+    );
+  }
+
+  if (message.kind === "pathway") {
+    const statusLabel: Record<string, string> = {
+      complete: "Complete",
+      current: "In progress",
+      eligible: "Eligible",
+      locked: "Locked",
+    };
+    const statusTone: Record<string, string> = {
+      complete: "text-status-green border-status-green/40",
+      current: "text-status-amber border-status-amber/40",
+      eligible: "text-status-green border-status-green/40",
+      locked: "border-border text-subtle",
+    };
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Bankability Pathway</p>
+        <div className="mt-4 flex flex-col gap-4">
+          {message.phases.map((phase, i) => (
+            <div key={phase.key} className="relative pl-6">
+              {i < message.phases.length - 1 ? (
+                <span className="absolute top-6 left-[7px] h-[calc(100%+0.75rem)] w-px bg-border" />
+              ) : null}
+              <span
+                className={cn(
+                  "absolute top-1 left-0 size-3.5 rounded-full border-2",
+                  phase.status === "locked" ? "border-border bg-surface" : "border-accent bg-accent",
+                )}
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-medium">{phase.name}</h3>
+                <Badge className={statusTone[phase.status]}>{statusLabel[phase.status]}</Badge>
+              </div>
+              <p className="mt-1 text-sm leading-relaxed text-muted">{phase.description}</p>
+              {phase.detail ? <p className="mt-1 text-xs leading-relaxed text-subtle">{phase.detail}</p> : null}
+              {phase.items?.length ? (
+                <ul className="mt-2 space-y-1.5 text-xs leading-relaxed">
+                  {phase.items.map((item, idx) => (
+                    <li key={idx} className="flex gap-2">
+                      <span className="mt-1.5 size-1 shrink-0 rounded-full bg-accent" />
+                      <span>
+                        <span className="font-medium">{item.domain}</span> — {item.action}{" "}
+                        <span className="text-subtle">({item.category})</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ))}
+        </div>
       </article>
     );
   }
