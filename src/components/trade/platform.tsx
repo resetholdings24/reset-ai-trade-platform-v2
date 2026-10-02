@@ -21,6 +21,7 @@ import { applyAssessment, routeQuery, type AssessmentState } from "@/lib/trade/e
 import { nextDimension } from "@/lib/trade/assessment";
 import { nextDomain } from "@/lib/trade/bsc-evaluation";
 import { getPathwayPhases, isPathwayRequest, type PathwayPhase } from "@/lib/trade/bankability-pathway";
+import { getMatches, isMatchingRequest, type MatchingOutcome } from "@/lib/trade/financial-matching";
 import { AGENTS, TOOLS } from "@/lib/trade/knowledge";
 import type { AgentId, AssessmentResult, BSCEvaluationResult, KnowledgeCard } from "@/lib/trade/types";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +45,8 @@ type Message =
     }
   | { id: string; role: "assistant"; kind: "result"; result: AssessmentResult }
   | { id: string; role: "assistant"; kind: "bsc-result"; result: BSCEvaluationResult }
-  | { id: string; role: "assistant"; kind: "pathway"; phases: PathwayPhase[] };
+  | { id: string; role: "assistant"; kind: "pathway"; phases: PathwayPhase[] }
+  | { id: string; role: "assistant"; kind: "matching"; outcome: MatchingOutcome };
 
 const AGENT_ICONS: Record<AgentId, typeof Compass> = {
   guidance: Compass,
@@ -170,6 +172,13 @@ export function TradePlatform() {
       return;
     }
 
+    if (!assessment.active && isMatchingRequest(query.toLowerCase())) {
+      const outcome = getMatches(query, lastBscResult);
+      setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "matching", outcome }]);
+      setBusy(false);
+      return;
+    }
+
     const nextState = applyAssessment(query, assessment);
     const reply = routeQuery(query, assessment);
     setAssessment(nextState);
@@ -241,6 +250,7 @@ export function TradePlatform() {
   function reset() {
     setMessages([WELCOME]);
     setAssessment({ active: false, kind: null, answers: {} });
+    setLastBscResult(null);
     setInput("");
   }
 
@@ -367,6 +377,14 @@ export function TradePlatform() {
             >
               <Route className="size-4 shrink-0" strokeWidth={1.75} />
               View My Pathway
+            </button>
+            <button
+              type="button"
+              onClick={() => send("find financing")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Handshake className="size-4 shrink-0" strokeWidth={1.75} />
+              Find Financing Matches
             </button>
           </div>
         </div>
@@ -732,9 +750,12 @@ function MessageView({
             </li>
           ))}
         </ul>
-        <div className="mt-4 border-t border-border pt-4">
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
           <Button type="button" variant="secondary" size="sm" onClick={() => onRelated("bankability pathway")}>
             View Bankability Pathway
+          </Button>
+          <Button type="button" variant="secondary" size="sm" onClick={() => onRelated("find financing")}>
+            Find Financing Matches
           </Button>
         </div>
       </article>
@@ -791,6 +812,56 @@ function MessageView({
             </div>
           ))}
         </div>
+      </article>
+    );
+  }
+
+  if (message.kind === "matching") {
+    const { outcome } = message;
+    if (!outcome.eligible) {
+      return (
+        <article className="rounded-xl border border-border bg-surface p-5">
+          <p className="text-xs font-medium tracking-wide text-subtle uppercase">AI Financial Matching</p>
+          <p className="mt-3 text-sm leading-relaxed">{outcome.reason}</p>
+        </article>
+      );
+    }
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">AI Financial Matching</p>
+        <div className="mt-2 rounded-md border border-dashed border-border bg-elevated/60 px-3 py-2 text-xs leading-relaxed text-muted">
+          These are illustrative example lender profiles used to demonstrate the matching framework — not real
+          financial institutions. No actual FI partnerships exist yet on this platform.
+        </div>
+        {outcome.financingType || outcome.amount ? (
+          <p className="mt-3 text-sm text-muted">
+            Matching against: {outcome.financingType ? outcome.financingType.replace("_", " ") : "any financing type"}
+            {outcome.amount ? `, approximately $${outcome.amount.toLocaleString()}` : ""}
+          </p>
+        ) : (
+          <p className="mt-3 text-sm text-muted">
+            No specific amount or financing type detected — showing all illustrative lenders you're eligible for.
+            Try "I need $30,000 working capital" for a narrower match.
+          </p>
+        )}
+        {outcome.matches.length === 0 ? (
+          <p className="mt-4 text-sm leading-relaxed">
+            No illustrative lenders match those specifics. Try a different amount or financing type.
+          </p>
+        ) : (
+          <div className="mt-4 flex flex-col gap-3">
+            {outcome.matches.map((fi) => (
+              <div key={fi.id} className="rounded-lg border border-border p-3">
+                <p className="text-sm font-medium">{fi.name} (Illustrative)</p>
+                <p className="mt-1 text-xs text-muted">
+                  ${fi.minAmount.toLocaleString()}–${fi.maxAmount.toLocaleString()} · {fi.indicativeRate} ·{" "}
+                  {fi.indicativeTerm}
+                </p>
+                {fi.sectorNote ? <p className="mt-1 text-xs text-subtle">{fi.sectorNote}</p> : null}
+              </div>
+            ))}
+          </div>
+        )}
       </article>
     );
   }
