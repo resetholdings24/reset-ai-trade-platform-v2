@@ -2,10 +2,11 @@ import { AGREEMENTS, EPA, EPA_SECTORS, FINANCE, INTERNATIONAL, MARKET, PARISHES,
 import type { EngineReply, KnowledgeCard } from "./types";
 import { isReadinessStart, nextDimension, parseScore, scoreAssessment } from "./assessment";
 import { isBSCEvaluationStart, nextDomain, scoreEvaluation } from "./bsc-evaluation";
+import { isRiskMonitoringStart, nextRiskCategory, scoreRiskAssessment } from "./risk-monitoring";
 
 export type AssessmentState = {
   active: boolean;
-  kind: "export" | "bsc" | null;
+  kind: "export" | "bsc" | "risk" | null;
   answers: Record<string, number>;
 };
 
@@ -78,7 +79,40 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
   if (assessment.active) {
     const score = parseScore(q);
 
-    if (assessment.kind === "bsc") {
+    if (assessment.kind === "risk") {
+      const next = nextRiskCategory(assessment.answers);
+      if (score != null && next) {
+        const answers = { ...assessment.answers, [next.key]: score };
+        const following = nextRiskCategory(answers);
+        if (following) {
+          return {
+            kind: "risk-question",
+            question: following.question,
+            step: Object.keys(answers).length + 1,
+            total: 6,
+            name: following.name,
+          };
+        }
+        return { kind: "risk-result", result: scoreRiskAssessment(answers) };
+      }
+      if (isReadinessStart(q)) {
+        const first = nextDimension({});
+        return { kind: "assessment-start", question: first!.question, step: 1, total: 5, name: first!.name };
+      }
+      if (isBSCEvaluationStart(q)) {
+        const first = nextDomain({});
+        return { kind: "bsc-start", question: first!.question, step: 1, total: 6, name: first!.name };
+      }
+      if (next && !isOtherTool(q)) {
+        return {
+          kind: "need-score",
+          question: next.question,
+          step: Object.keys(assessment.answers).length + 1,
+          total: 6,
+          name: next.name,
+        };
+      }
+    } else if (assessment.kind === "bsc") {
       const next = nextDomain(assessment.answers);
       if (score != null && next) {
         const answers = { ...assessment.answers, [next.key]: score };
@@ -97,6 +131,10 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
       if (isReadinessStart(q)) {
         const first = nextDimension({});
         return { kind: "assessment-start", question: first!.question, step: 1, total: 5, name: first!.name };
+      }
+      if (isRiskMonitoringStart(q)) {
+        const first = nextRiskCategory({});
+        return { kind: "risk-start", question: first!.question, step: 1, total: 6, name: first!.name };
       }
       if (next && !isOtherTool(q)) {
         return {
@@ -127,6 +165,10 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
         const first = nextDomain({});
         return { kind: "bsc-start", question: first!.question, step: 1, total: 6, name: first!.name };
       }
+      if (isRiskMonitoringStart(q)) {
+        const first = nextRiskCategory({});
+        return { kind: "risk-start", question: first!.question, step: 1, total: 6, name: first!.name };
+      }
       if (next && !isOtherTool(q)) {
         return {
           kind: "need-score",
@@ -147,6 +189,11 @@ export function routeQuery(raw: string, assessment: AssessmentState): EngineRepl
   if (isBSCEvaluationStart(q)) {
     const first = nextDomain({});
     return { kind: "bsc-start", question: first!.question, step: 1, total: 6, name: first!.name };
+  }
+
+  if (isRiskMonitoringStart(q)) {
+    const first = nextRiskCategory({});
+    return { kind: "risk-start", question: first!.question, step: 1, total: 6, name: first!.name };
   }
 
   if (
@@ -325,13 +372,24 @@ export function applyAssessment(raw: string, assessment: AssessmentState): Asses
 
   if (isReadinessStart(q)) return { active: true, kind: "export", answers: {} };
   if (isBSCEvaluationStart(q)) return { active: true, kind: "bsc", answers: {} };
+  if (isRiskMonitoringStart(q)) return { active: true, kind: "risk", answers: {} };
   if (!assessment.active) return assessment;
 
   const score = parseScore(q);
-  const next = assessment.kind === "bsc" ? nextDomain(assessment.answers) : nextDimension(assessment.answers);
+  const next =
+    assessment.kind === "bsc"
+      ? nextDomain(assessment.answers)
+      : assessment.kind === "risk"
+        ? nextRiskCategory(assessment.answers)
+        : nextDimension(assessment.answers);
   if (score != null && next) {
     const answers = { ...assessment.answers, [next.key]: score };
-    const stillNext = assessment.kind === "bsc" ? nextDomain(answers) : nextDimension(answers);
+    const stillNext =
+      assessment.kind === "bsc"
+        ? nextDomain(answers)
+        : assessment.kind === "risk"
+          ? nextRiskCategory(answers)
+          : nextDimension(answers);
     if (!stillNext) return { active: false, kind: null, answers };
     return { active: true, kind: assessment.kind, answers };
   }

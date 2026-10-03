@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Route,
   Scale,
+  ShieldAlert,
   Send,
   Ship,
   Store,
@@ -19,11 +20,22 @@ import {
 import { askGrok } from "@/lib/ai/ask-grok";
 import { applyAssessment, routeQuery, type AssessmentState } from "@/lib/trade/engine";
 import { nextDimension } from "@/lib/trade/assessment";
-import { nextDomain } from "@/lib/trade/bsc-evaluation";
+import { isBSCEvaluationStart, nextDomain } from "@/lib/trade/bsc-evaluation";
 import { getPathwayPhases, isPathwayRequest, type PathwayPhase } from "@/lib/trade/bankability-pathway";
 import { getMatches, isMatchingRequest, type MatchingOutcome } from "@/lib/trade/financial-matching";
+import {
+  buildProfile,
+  canAccess,
+  FEATURE_GATES,
+  GUIDANCE_QUESTIONS,
+  isGuidanceStart,
+  nextGuidanceQuestion,
+  type BusinessProfile,
+  type MembershipTier,
+} from "@/lib/trade/membership";
+import { isRiskMonitoringStart } from "@/lib/trade/risk-monitoring";
 import { AGENTS, TOOLS } from "@/lib/trade/knowledge";
-import type { AgentId, AssessmentResult, BSCEvaluationResult, KnowledgeCard } from "@/lib/trade/types";
+import type { AgentId, AssessmentResult, BSCEvaluationResult, KnowledgeCard, RiskAssessmentResult } from "@/lib/trade/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,7 +58,20 @@ type Message =
   | { id: string; role: "assistant"; kind: "result"; result: AssessmentResult }
   | { id: string; role: "assistant"; kind: "bsc-result"; result: BSCEvaluationResult }
   | { id: string; role: "assistant"; kind: "pathway"; phases: PathwayPhase[] }
-  | { id: string; role: "assistant"; kind: "matching"; outcome: MatchingOutcome };
+  | { id: string; role: "assistant"; kind: "matching"; outcome: MatchingOutcome }
+  | { id: string; role: "assistant"; kind: "risk-result"; result: RiskAssessmentResult }
+  | {
+      id: string;
+      role: "assistant";
+      kind: "choice-question";
+      question: string;
+      step: number;
+      total: number;
+      name: string;
+      options: readonly string[];
+    }
+  | { id: string; role: "assistant"; kind: "profile"; profile: BusinessProfile; suggestedNextStep: string }
+  | { id: string; role: "assistant"; kind: "gate"; feature: string; requiredTier: MembershipTier };
 
 const AGENT_ICONS: Record<AgentId, typeof Compass> = {
   guidance: Compass,
@@ -136,6 +161,11 @@ export function TradePlatform() {
   const [territory, setTerritory] = useState<string | null>(null);
   const [expandedLayer, setExpandedLayer] = useState<string | null>(null);
   const [lastBscResult, setLastBscResult] = useState<BSCEvaluationResult | null>(null);
+  const [memberTier, setMemberTier] = useState<MembershipTier>("Guest");
+  const [guidanceState, setGuidanceState] = useState<{ active: boolean; answers: Record<string, string> }>({
+    active: false,
+    answers: {},
+  });
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? window.localStorage.getItem("reset-trade-territory") : null;
@@ -165,19 +195,86 @@ export function TradePlatform() {
     setMessages((m) => [...m, userMsg]);
     setBusy(true);
 
-    if (!assessment.active && isPathwayRequest(query.toLowerCase())) {
+    const q = query.toLowerCase();
+
+    function gated(feature: Parameters<typeof canAccess>[1]): boolean {
+      if (canAccess(memberTier, feature)) return false;
+      setMessages((m) => [
+        ...m,
+        { id: uid(), role: "assistant", kind: "gate", feature, requiredTier: FEATURE_GATES[feature] },
+      ]);
+      setBusy(false);
+      return true;
+    }
+
+    if (guidanceState.active) {
+      const current = nextGuidanceQuestion(guidanceState.answers);
+      if (current) {
+        const answers = { ...guidanceState.answers, [current.key]: query };
+        const following = nextGuidanceQuestion(answers);
+        if (following) {
+          setGuidanceState({ active: true, answers });
+          setMessages((m) => [
+            ...m,
+            {
+              id: uid(),
+              role: "assistant",
+              kind: "choice-question",
+              question: following.question,
+              step: Object.keys(answers).length + 1,
+              total: GUIDANCE_QUESTIONS.length,
+              name: following.name,
+              options: following.options,
+            },
+          ]);
+        } else {
+          setGuidanceState({ active: false, answers: {} });
+          const { profile, suggestedNextStep } = buildProfile(answers);
+          setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "profile", profile, suggestedNextStep }]);
+        }
+        setBusy(false);
+        return;
+      }
+    }
+
+    if (!guidanceState.active && isGuidanceStart(q)) {
+      const first = GUIDANCE_QUESTIONS[0];
+      setGuidanceState({ active: true, answers: {} });
+      setMessages((m) => [
+        ...m,
+        {
+          id: uid(),
+          role: "assistant",
+          kind: "choice-question",
+          question: first.question,
+          step: 1,
+          total: GUIDANCE_QUESTIONS.length,
+          name: first.name,
+          options: first.options,
+        },
+      ]);
+      setBusy(false);
+      return;
+    }
+
+    if (!assessment.active && isPathwayRequest(q)) {
+      if (gated("pathway")) return;
       const phases = getPathwayPhases(lastBscResult);
       setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "pathway", phases }]);
       setBusy(false);
       return;
     }
 
-    if (!assessment.active && isMatchingRequest(query.toLowerCase())) {
+    if (!assessment.active && isMatchingRequest(q)) {
+      if (gated("matching")) return;
       const outcome = getMatches(query, lastBscResult);
       setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "matching", outcome }]);
       setBusy(false);
       return;
     }
+
+    if (!assessment.active && isBSCEvaluationStart(q) && gated("evaluation")) return;
+    if (!assessment.active && isRiskMonitoringStart(q) && gated("riskMonitoring")) return;
 
     const nextState = applyAssessment(query, assessment);
     const reply = routeQuery(query, assessment);
@@ -193,6 +290,8 @@ export function TradePlatform() {
       reply.kind === "assessment-question" ||
       reply.kind === "bsc-start" ||
       reply.kind === "bsc-question" ||
+      reply.kind === "risk-start" ||
+      reply.kind === "risk-question" ||
       reply.kind === "need-score"
     ) {
       setMessages((m) => [
@@ -218,6 +317,11 @@ export function TradePlatform() {
     if (reply.kind === "bsc-result") {
       setLastBscResult(reply.result);
       setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "bsc-result", result: reply.result }]);
+      setBusy(false);
+      return;
+    }
+    if (reply.kind === "risk-result") {
+      setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "risk-result", result: reply.result }]);
       setBusy(false);
       return;
     }
@@ -251,6 +355,8 @@ export function TradePlatform() {
     setMessages([WELCOME]);
     setAssessment({ active: false, kind: null, answers: {} });
     setLastBscResult(null);
+    setGuidanceState({ active: false, answers: {} });
+    setMemberTier("Guest");
     setInput("");
   }
 
@@ -359,6 +465,19 @@ export function TradePlatform() {
             })}
           </div>
           <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
+            Business Guidance
+          </p>
+          <div className="hidden flex-col gap-1 lg:flex">
+            <button
+              type="button"
+              onClick={() => send("business guidance")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Compass className="size-4 shrink-0" strokeWidth={1.75} />
+              Create My Business Profile
+            </button>
+          </div>
+          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
             BSC Bankability
           </p>
           <div className="hidden flex-col gap-1 lg:flex">
@@ -386,7 +505,38 @@ export function TradePlatform() {
               <Handshake className="size-4 shrink-0" strokeWidth={1.75} />
               Find Financing Matches
             </button>
+            <button
+              type="button"
+              onClick={() => send("risk monitoring check")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <ShieldAlert className="size-4 shrink-0" strokeWidth={1.75} />
+              Risk Monitoring Check
+            </button>
           </div>
+          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
+            Simulated Membership
+          </p>
+          <div className="hidden flex-wrap gap-1.5 px-1 lg:flex">
+            {(["Guest", "Basic", "Premium", "Enterprise"] as MembershipTier[]).map((tier) => (
+              <button
+                key={tier}
+                type="button"
+                onClick={() => setMemberTier(tier)}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-xs transition-colors duration-150",
+                  memberTier === tier
+                    ? "border-accent/40 bg-elevated text-fg"
+                    : "border-border text-muted hover:bg-elevated hover:text-fg",
+                )}
+              >
+                {tier}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1.5 hidden px-1 text-[11px] leading-relaxed text-subtle lg:block">
+            No real billing exists — this switches a demo tier to show the gating logic described in the spec.
+          </p>
         </div>
         <div className="hidden border-t border-border px-5 py-4 lg:block">
           <Button variant="ghost" size="sm" className="w-full justify-start" onClick={reset}>
@@ -658,6 +808,120 @@ function MessageView({
             </Button>
           ))}
         </div>
+      </article>
+    );
+  }
+
+  if (message.kind === "choice-question") {
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <Badge>
+          Question {message.step} of {message.total} · {message.name}
+        </Badge>
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed">{message.question}</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {message.options.map((opt) => (
+            <Button key={opt} type="button" variant="secondary" size="sm" onClick={() => onRelated(opt)}>
+              {opt}
+            </Button>
+          ))}
+        </div>
+      </article>
+    );
+  }
+
+  if (message.kind === "profile") {
+    const { profile, suggestedNextStep } = message;
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Business Profile Created</p>
+        <div className="mt-3 space-y-1.5 text-sm leading-relaxed">
+          <p>
+            <span className="text-muted">Stage:</span> {profile.stage}
+          </p>
+          <p>
+            <span className="text-muted">Sector:</span> {profile.sector}
+          </p>
+          <p>
+            <span className="text-muted">Primary challenge:</span> {profile.challenge}
+          </p>
+          <p>
+            <span className="text-muted">12-month objective:</span> {profile.objective}
+          </p>
+        </div>
+        <div className="mt-4 border-t border-border pt-4">
+          <p className="text-xs font-medium tracking-wide text-subtle uppercase">Suggested Next Step</p>
+          <p className="mt-2 text-sm leading-relaxed">{suggestedNextStep}</p>
+        </div>
+        <div className="mt-4">
+          <Button type="button" variant="secondary" size="sm" onClick={() => onRelated("6-Domain Evaluation")}>
+            Start 6-Domain Evaluation
+          </Button>
+        </div>
+      </article>
+    );
+  }
+
+  if (message.kind === "gate") {
+    const featureLabel: Record<string, string> = {
+      evaluation: "the 6-Domain Evaluation",
+      pathway: "the Bankability Pathway",
+      matching: "AI Financial Matching",
+      riskMonitoring: "the Risk Monitoring Check",
+    };
+    return (
+      <article className="rounded-xl border border-dashed border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Membership Required</p>
+        <p className="mt-3 text-sm leading-relaxed">
+          {featureLabel[message.feature] ?? "This feature"} requires <strong>{message.requiredTier}</strong> membership
+          or higher. Use the "Simulated Membership" selector in the sidebar to try the gating logic — no real billing
+          exists yet.
+        </p>
+      </article>
+    );
+  }
+
+  if (message.kind === "risk-result") {
+    const r = message.result;
+    const statusTone: Record<string, string> = {
+      Green: "text-status-green border-status-green/40",
+      Amber: "text-status-amber border-status-amber/40",
+      Red: "text-status-red border-status-red/40",
+    };
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Risk Monitoring Check</p>
+        <p className="mt-2 font-display text-3xl font-medium tabular-nums tracking-tight">
+          {r.overallScore}
+          <span className="text-lg text-muted">/100</span>
+        </p>
+        <div className="mt-4 space-y-2">
+          {r.categories.map((c) => (
+            <div key={c.key} className="flex items-center justify-between gap-2">
+              <span className="text-sm">{c.name}</span>
+              <Badge className={statusTone[c.status]}>{c.status}</Badge>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 border-t border-border pt-4">
+          <p className="text-xs font-medium tracking-wide text-subtle uppercase">Scenario</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted">{r.scenario}</p>
+        </div>
+        {r.mitigations.length > 0 ? (
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="text-xs font-medium tracking-wide text-subtle uppercase">Suggested Mitigations</p>
+            <ul className="mt-2 space-y-2 text-sm leading-relaxed">
+              {r.mitigations.map((m) => (
+                <li key={m.category} className="flex gap-2">
+                  <span className="mt-2 size-1 shrink-0 rounded-full bg-accent" />
+                  <span>
+                    <span className="font-medium">{m.category}</span> — {m.suggestion}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </article>
     );
   }
