@@ -24,7 +24,7 @@ export type PathwayPhase = {
   description: string;
   status: PathwayPhaseStatus;
   detail?: string;
-  items?: { domain: string; category: string; action: string }[];
+  items?: { domain: string; category: string; action: string; prompt?: string }[];
 };
 
 // Domain → intervention category mapping, drawn directly from Table 20
@@ -36,15 +36,23 @@ export type PathwayPhase = {
 //   - Business Advice & Consulting + ERP/CRM (Odoo adoption) → Organisational Systems
 //   - Tailored Training (financial literacy) + Technology Tools (accounting) → Financial Capability
 //   - Online Marketplace activity → Market Potential
-const DOMAIN_INTERVENTIONS: Record<string, { category: string; action: string }[]> = {
+const DOMAIN_INTERVENTIONS: Record<string, { category: string; action: string; prompt?: string }[]> = {
   technology: [{ category: "Technology Tools & Apps", action: "Adopt digital tools and strengthen cybersecurity practices." }],
   management: [
-    { category: "Business Advice & Consulting", action: "Work with a consultant on leadership structure and governance." },
+    {
+      category: "Business Advice & Consulting",
+      action: "Work with a consultant on leadership structure and governance.",
+      prompt: "business plan",
+    },
     { category: "Tailored Training Solutions", action: "Complete leadership training to build management capability." },
   ],
   human_resources: [{ category: "Tailored Training Solutions", action: "Invest in staff training and HR systems." }],
   organisational_systems: [
-    { category: "Business Advice & Consulting", action: "Document standard operating procedures with a consultant." },
+    {
+      category: "Business Advice & Consulting",
+      action: "Document standard operating procedures with a consultant.",
+      prompt: "business plan",
+    },
     { category: "ERP/CRM — Odoo", action: "Adopt Odoo to formalise organisational systems." },
   ],
   financial: [
@@ -71,7 +79,7 @@ export function getPathwayPhases(lastResult: BSCEvaluationResult | null): Pathwa
     ? lastResult.domains
         .filter((d) => d.score < 4)
         .flatMap((d) =>
-          (DOMAIN_INTERVENTIONS[d.key] ?? []).map((i) => ({ domain: d.name, category: i.category, action: i.action })),
+          (DOMAIN_INTERVENTIONS[d.key] ?? []).map((i) => ({ domain: d.name, category: i.category, action: i.action, prompt: i.prompt })),
         )
     : [];
 

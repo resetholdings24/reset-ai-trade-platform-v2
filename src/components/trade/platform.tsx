@@ -34,6 +34,19 @@ import {
   type MembershipTier,
 } from "@/lib/trade/membership";
 import { isRiskMonitoringStart } from "@/lib/trade/risk-monitoring";
+import {
+  BUSINESS_PLAN_QUESTIONS,
+  buildBusinessPlanSummary,
+  computeProjections,
+  isBusinessPlanStart,
+  isProjectionsStart,
+  nextBusinessPlanQuestion,
+  nextProjectionQuestion,
+  parseNumericAnswer,
+  PROJECTION_QUESTIONS,
+  type BusinessPlanSummary,
+  type ProjectionYear,
+} from "@/lib/trade/consulting";
 import { AGENTS, TOOLS } from "@/lib/trade/knowledge";
 import type { AgentId, AssessmentResult, BSCEvaluationResult, KnowledgeCard, RiskAssessmentResult } from "@/lib/trade/types";
 import { Badge } from "@/components/ui/badge";
@@ -71,7 +84,10 @@ type Message =
       options: readonly string[];
     }
   | { id: string; role: "assistant"; kind: "profile"; profile: BusinessProfile; suggestedNextStep: string }
-  | { id: string; role: "assistant"; kind: "gate"; feature: string; requiredTier: MembershipTier };
+  | { id: string; role: "assistant"; kind: "gate"; feature: string; requiredTier: MembershipTier }
+  | { id: string; role: "assistant"; kind: "text-question"; question: string; step: number; total: number; name: string }
+  | { id: string; role: "assistant"; kind: "business-plan"; summary: BusinessPlanSummary }
+  | { id: string; role: "assistant"; kind: "projections"; years: ProjectionYear[] };
 
 const AGENT_ICONS: Record<AgentId, typeof Compass> = {
   guidance: Compass,
@@ -166,6 +182,14 @@ export function TradePlatform() {
     active: false,
     answers: {},
   });
+  const [planState, setPlanState] = useState<{ active: boolean; answers: Record<string, string> }>({
+    active: false,
+    answers: {},
+  });
+  const [projectionState, setProjectionState] = useState<{ active: boolean; answers: Record<string, string> }>({
+    active: false,
+    answers: {},
+  });
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? window.localStorage.getItem("reset-trade-territory") : null;
@@ -237,6 +261,84 @@ export function TradePlatform() {
       }
     }
 
+    if (planState.active) {
+      const current = nextBusinessPlanQuestion(planState.answers);
+      if (current) {
+        const answers = { ...planState.answers, [current.key]: query };
+        const following = nextBusinessPlanQuestion(answers);
+        if (following) {
+          setPlanState({ active: true, answers });
+          setMessages((m) => [
+            ...m,
+            {
+              id: uid(),
+              role: "assistant",
+              kind: "text-question",
+              question: following.question,
+              step: Object.keys(answers).length + 1,
+              total: BUSINESS_PLAN_QUESTIONS.length,
+              name: following.name,
+            },
+          ]);
+        } else {
+          setPlanState({ active: false, answers: {} });
+          setMessages((m) => [
+            ...m,
+            { id: uid(), role: "assistant", kind: "business-plan", summary: buildBusinessPlanSummary(answers) },
+          ]);
+        }
+        setBusy(false);
+        return;
+      }
+    }
+
+    if (projectionState.active) {
+      const current = nextProjectionQuestion(projectionState.answers);
+      if (current) {
+        if (parseNumericAnswer(query) == null) {
+          setMessages((m) => [
+            ...m,
+            {
+              id: uid(),
+              role: "assistant",
+              kind: "text-question",
+              question: `That doesn't look like a number. ${current.question}`,
+              step: Object.keys(projectionState.answers).length + 1,
+              total: PROJECTION_QUESTIONS.length,
+              name: current.name,
+            },
+          ]);
+          setBusy(false);
+          return;
+        }
+        const answers = { ...projectionState.answers, [current.key]: query };
+        const following = nextProjectionQuestion(answers);
+        if (following) {
+          setProjectionState({ active: true, answers });
+          setMessages((m) => [
+            ...m,
+            {
+              id: uid(),
+              role: "assistant",
+              kind: "text-question",
+              question: following.question,
+              step: Object.keys(answers).length + 1,
+              total: PROJECTION_QUESTIONS.length,
+              name: following.name,
+            },
+          ]);
+        } else {
+          setProjectionState({ active: false, answers: {} });
+          setMessages((m) => [
+            ...m,
+            { id: uid(), role: "assistant", kind: "projections", years: computeProjections(answers) },
+          ]);
+        }
+        setBusy(false);
+        return;
+      }
+    }
+
     if (!guidanceState.active && isGuidanceStart(q)) {
       const first = GUIDANCE_QUESTIONS[0];
       setGuidanceState({ active: true, answers: {} });
@@ -275,6 +377,46 @@ export function TradePlatform() {
 
     if (!assessment.active && isBSCEvaluationStart(q) && gated("evaluation")) return;
     if (!assessment.active && isRiskMonitoringStart(q) && gated("riskMonitoring")) return;
+
+    if (!planState.active && isBusinessPlanStart(q)) {
+      if (gated("consulting")) return;
+      const first = BUSINESS_PLAN_QUESTIONS[0];
+      setPlanState({ active: true, answers: {} });
+      setMessages((m) => [
+        ...m,
+        {
+          id: uid(),
+          role: "assistant",
+          kind: "text-question",
+          question: first.question,
+          step: 1,
+          total: BUSINESS_PLAN_QUESTIONS.length,
+          name: first.name,
+        },
+      ]);
+      setBusy(false);
+      return;
+    }
+
+    if (!projectionState.active && isProjectionsStart(q)) {
+      if (gated("consulting")) return;
+      const first = PROJECTION_QUESTIONS[0];
+      setProjectionState({ active: true, answers: {} });
+      setMessages((m) => [
+        ...m,
+        {
+          id: uid(),
+          role: "assistant",
+          kind: "text-question",
+          question: first.question,
+          step: 1,
+          total: PROJECTION_QUESTIONS.length,
+          name: first.name,
+        },
+      ]);
+      setBusy(false);
+      return;
+    }
 
     const nextState = applyAssessment(query, assessment);
     const reply = routeQuery(query, assessment);
@@ -356,6 +498,8 @@ export function TradePlatform() {
     setAssessment({ active: false, kind: null, answers: {} });
     setLastBscResult(null);
     setGuidanceState({ active: false, answers: {} });
+    setPlanState({ active: false, answers: {} });
+    setProjectionState({ active: false, answers: {} });
     setMemberTier("Guest");
     setInput("");
   }
@@ -475,6 +619,27 @@ export function TradePlatform() {
             >
               <Compass className="size-4 shrink-0" strokeWidth={1.75} />
               Create My Business Profile
+            </button>
+          </div>
+          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
+            Consulting
+          </p>
+          <div className="hidden flex-col gap-1 lg:flex">
+            <button
+              type="button"
+              onClick={() => send("business plan")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Handshake className="size-4 shrink-0" strokeWidth={1.75} />
+              Business Plan Builder
+            </button>
+            <button
+              type="button"
+              onClick={() => send("financial projections")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Wallet className="size-4 shrink-0" strokeWidth={1.75} />
+              Financial Projections
             </button>
           </div>
           <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
@@ -830,6 +995,90 @@ function MessageView({
     );
   }
 
+  if (message.kind === "text-question") {
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <Badge>
+          Question {message.step} of {message.total} · {message.name}
+        </Badge>
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed">{message.question}</p>
+        <p className="mt-3 text-xs text-subtle">Type your answer in the message box below.</p>
+      </article>
+    );
+  }
+
+  if (message.kind === "business-plan") {
+    const s = message.summary;
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Business Plan Summary</p>
+        <div className="mt-3 space-y-3 text-sm leading-relaxed">
+          <div>
+            <p className="text-xs font-medium text-muted uppercase tracking-wide">Problem</p>
+            <p className="mt-0.5">{s.problem}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted uppercase tracking-wide">Solution</p>
+            <p className="mt-0.5">{s.solution}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted uppercase tracking-wide">Target Market</p>
+            <p className="mt-0.5">{s.market}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted uppercase tracking-wide">Revenue Model</p>
+            <p className="mt-0.5">{s.revenueModel}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted uppercase tracking-wide">Team</p>
+            <p className="mt-0.5">{s.team}</p>
+          </div>
+        </div>
+        <div className="mt-4 border-t border-border pt-4">
+          <Button type="button" variant="secondary" size="sm" onClick={() => onRelated("financial projections")}>
+            Add Financial Projections
+          </Button>
+        </div>
+      </article>
+    );
+  }
+
+  if (message.kind === "projections") {
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">3-Year Financial Projections</p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-xs text-muted">
+                <th className="py-1.5 text-left font-medium">Year</th>
+                <th className="py-1.5 text-right font-medium">Revenue</th>
+                <th className="py-1.5 text-right font-medium">Expenses</th>
+                <th className="py-1.5 text-right font-medium">Cash Flow</th>
+                <th className="py-1.5 text-right font-medium">Cumulative</th>
+              </tr>
+            </thead>
+            <tbody>
+              {message.years.map((y) => (
+                <tr key={y.year} className="border-b border-border/60">
+                  <td className="py-1.5">Year {y.year}</td>
+                  <td className="py-1.5 text-right tabular-nums">${y.revenue.toLocaleString()}</td>
+                  <td className="py-1.5 text-right tabular-nums">${y.expenses.toLocaleString()}</td>
+                  <td className="py-1.5 text-right tabular-nums">${y.cashFlow.toLocaleString()}</td>
+                  <td className="py-1.5 text-right tabular-nums">${y.cumulativeCashFlow.toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-xs leading-relaxed text-subtle">
+          Projections apply your stated growth rates evenly each year — a simplified model for planning purposes, not
+          a substitute for a qualified accountant's review.
+        </p>
+      </article>
+    );
+  }
+
   if (message.kind === "profile") {
     const { profile, suggestedNextStep } = message;
     return (
@@ -1068,6 +1317,18 @@ function MessageView({
                       <span>
                         <span className="font-medium">{item.domain}</span> — {item.action}{" "}
                         <span className="text-subtle">({item.category})</span>
+                        {item.prompt ? (
+                          <>
+                            {" "}
+                            <button
+                              type="button"
+                              onClick={() => onRelated(item.prompt!)}
+                              className="text-accent underline underline-offset-2 hover:no-underline"
+                            >
+                              Start now →
+                            </button>
+                          </>
+                        ) : null}
                       </span>
                     </li>
                   ))}

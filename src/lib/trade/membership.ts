@@ -22,6 +22,7 @@ export const FEATURE_GATES = {
   pathway: "Basic" as MembershipTier,
   matching: "Basic" as MembershipTier,
   riskMonitoring: "Basic" as MembershipTier,
+  consulting: "Basic" as MembershipTier,
 };
 
 export function canAccess(tier: MembershipTier, feature: keyof typeof FEATURE_GATES): boolean {
