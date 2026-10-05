@@ -35,6 +35,12 @@ import {
 } from "@/lib/trade/membership";
 import { isRiskMonitoringStart } from "@/lib/trade/risk-monitoring";
 import {
+  getSkillGapAnalysis,
+  isCourseCompletion,
+  isTrainingStart,
+  type SkillGapOutcome,
+} from "@/lib/trade/training";
+import {
   BUSINESS_PLAN_QUESTIONS,
   buildBusinessPlanSummary,
   computeProjections,
@@ -87,7 +93,9 @@ type Message =
   | { id: string; role: "assistant"; kind: "gate"; feature: string; requiredTier: MembershipTier }
   | { id: string; role: "assistant"; kind: "text-question"; question: string; step: number; total: number; name: string }
   | { id: string; role: "assistant"; kind: "business-plan"; summary: BusinessPlanSummary }
-  | { id: string; role: "assistant"; kind: "projections"; years: ProjectionYear[] };
+  | { id: string; role: "assistant"; kind: "projections"; years: ProjectionYear[] }
+  | { id: string; role: "assistant"; kind: "skill-gap"; outcome: SkillGapOutcome }
+  | { id: string; role: "assistant"; kind: "course-complete"; courseTitle: string };
 
 const AGENT_ICONS: Record<AgentId, typeof Compass> = {
   guidance: Compass,
@@ -190,6 +198,7 @@ export function TradePlatform() {
     active: false,
     answers: {},
   });
+  const [completedCourses, setCompletedCourses] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? window.localStorage.getItem("reset-trade-territory") : null;
@@ -394,6 +403,26 @@ export function TradePlatform() {
           name: first.name,
         },
       ]);
+      setBusy(false);
+      return;
+    }
+
+    const completingCourse = isCourseCompletion(q);
+    if (completingCourse) {
+      if (gated("training")) return;
+      setCompletedCourses((prev) => new Set(prev).add(completingCourse.id));
+      setMessages((m) => [
+        ...m,
+        { id: uid(), role: "assistant", kind: "course-complete", courseTitle: completingCourse.title },
+      ]);
+      setBusy(false);
+      return;
+    }
+
+    if (isTrainingStart(q)) {
+      if (gated("training")) return;
+      const outcome = getSkillGapAnalysis(lastBscResult);
+      setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "skill-gap", outcome }]);
       setBusy(false);
       return;
     }
@@ -643,6 +672,19 @@ export function TradePlatform() {
             </button>
           </div>
           <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
+            Training
+          </p>
+          <div className="hidden flex-col gap-1 lg:flex">
+            <button
+              type="button"
+              onClick={() => send("skill gap analysis")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <GraduationCap className="size-4 shrink-0" strokeWidth={1.75} />
+              Skill Gap Analysis
+            </button>
+          </div>
+          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
             BSC Bankability
           </p>
           <div className="hidden flex-col gap-1 lg:flex">
@@ -789,7 +831,7 @@ export function TradePlatform() {
             ) : null}
 
             {messages.map((msg) => (
-              <MessageView key={msg.id} message={msg} onRelated={(p) => send(p)} />
+              <MessageView key={msg.id} message={msg} onRelated={(p) => send(p)} completedCourses={completedCourses} />
             ))}
 
             {busy ? (
@@ -844,9 +886,11 @@ export function TradePlatform() {
 function MessageView({
   message,
   onRelated,
+  completedCourses,
 }: {
   message: Message;
   onRelated: (prompt: string) => void;
+  completedCourses: Set<string>;
 }) {
   if (message.role === "user") {
     return (
@@ -1074,6 +1118,71 @@ function MessageView({
         <p className="mt-3 text-xs leading-relaxed text-subtle">
           Projections apply your stated growth rates evenly each year — a simplified model for planning purposes, not
           a substitute for a qualified accountant's review.
+        </p>
+      </article>
+    );
+  }
+
+  if (message.kind === "skill-gap") {
+    const { outcome } = message;
+    if (!outcome.eligible) {
+      return (
+        <article className="rounded-xl border border-border bg-surface p-5">
+          <p className="text-xs font-medium tracking-wide text-subtle uppercase">Skill Gap Analysis</p>
+          <p className="mt-3 text-sm leading-relaxed">{outcome.reason}</p>
+        </article>
+      );
+    }
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Skill Gap Analysis</p>
+        {outcome.gaps.length === 0 ? (
+          <p className="mt-3 text-sm leading-relaxed">
+            No significant gaps identified — all domains scored 4 or higher on your last evaluation.
+          </p>
+        ) : (
+          <div className="mt-3 flex flex-col gap-3">
+            {outcome.gaps.map((gap) => {
+              const done = completedCourses.has(gap.course.id);
+              return (
+                <div key={gap.course.id} className="rounded-lg border border-border p-3">
+                  <p className="text-xs text-muted">
+                    {gap.domain} scored {gap.score}/5
+                  </p>
+                  <p className="mt-1 text-sm font-medium">{gap.course.title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted">{gap.course.description}</p>
+                  <p className="mt-1 text-xs text-subtle">{gap.course.durationHours} hours</p>
+                  <div className="mt-2">
+                    {done ? (
+                      <Badge className="text-status-green border-status-green/40">Completed</Badge>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => onRelated(`complete course ${gap.course.id}`)}
+                      >
+                        Mark Complete
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </article>
+    );
+  }
+
+  if (message.kind === "course-complete") {
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Course Completed</p>
+        <p className="mt-3 text-sm leading-relaxed">
+          Marked "{message.courseTitle}" complete for this session. This doesn't automatically change your stored
+          evaluation score — re-take the 6-Domain Evaluation to reflect genuine improvement in your domain scores, per
+          how the spec says training completions feed scoring.
         </p>
       </article>
     );

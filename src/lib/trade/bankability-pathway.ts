@@ -44,9 +44,9 @@ const DOMAIN_INTERVENTIONS: Record<string, { category: string; action: string; p
       action: "Work with a consultant on leadership structure and governance.",
       prompt: "business plan",
     },
-    { category: "Tailored Training Solutions", action: "Complete leadership training to build management capability." },
+    { category: "Tailored Training Solutions", action: "Complete leadership training to build management capability.", prompt: "skill gap analysis" },
   ],
-  human_resources: [{ category: "Tailored Training Solutions", action: "Invest in staff training and HR systems." }],
+  human_resources: [{ category: "Tailored Training Solutions", action: "Invest in staff training and HR systems.", prompt: "skill gap analysis" }],
   organisational_systems: [
     {
       category: "Business Advice & Consulting",
@@ -56,7 +56,7 @@ const DOMAIN_INTERVENTIONS: Record<string, { category: string; action: string; p
     { category: "ERP/CRM — Odoo", action: "Adopt Odoo to formalise organisational systems." },
   ],
   financial: [
-    { category: "Tailored Training Solutions", action: "Complete financial literacy training." },
+    { category: "Tailored Training Solutions", action: "Complete financial literacy training.", prompt: "skill gap analysis" },
     { category: "Technology Tools & Apps", action: "Adopt accounting tools to strengthen financial record-keeping." },
   ],
   market_potential: [{ category: "Online Marketplace", action: "Build transaction history and buyer connections on the Marketplace." }],

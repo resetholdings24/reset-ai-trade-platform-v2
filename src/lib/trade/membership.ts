@@ -23,6 +23,7 @@ export const FEATURE_GATES = {
   matching: "Basic" as MembershipTier,
   riskMonitoring: "Basic" as MembershipTier,
   consulting: "Basic" as MembershipTier,
+  training: "Basic" as MembershipTier,
 };
 
 export function canAccess(tier: MembershipTier, feature: keyof typeof FEATURE_GATES): boolean {
