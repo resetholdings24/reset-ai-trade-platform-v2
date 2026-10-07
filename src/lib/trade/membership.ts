@@ -30,6 +30,20 @@ export function canAccess(tier: MembershipTier, feature: keyof typeof FEATURE_GA
   return TIER_RANK[tier] >= TIER_RANK[FEATURE_GATES[feature]];
 }
 
+// From v2 Table 22: marketplace listing limits are a quantity cap per tier,
+// not a simple on/off gate. Browsing is free for every tier, including
+// Guest — only creating a listing is limited.
+export const LISTING_LIMITS: Record<MembershipTier, number> = {
+  Guest: 0,
+  Basic: 1,
+  Premium: Infinity,
+  Enterprise: Infinity,
+};
+
+export function canCreateListing(tier: MembershipTier, currentCount: number): boolean {
+  return currentCount < LISTING_LIMITS[tier];
+}
+
 export type BusinessProfile = {
   stage: string;
   sector: string;

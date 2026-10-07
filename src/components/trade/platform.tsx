@@ -26,9 +26,11 @@ import { getMatches, isMatchingRequest, type MatchingOutcome } from "@/lib/trade
 import {
   buildProfile,
   canAccess,
+  canCreateListing,
   FEATURE_GATES,
   GUIDANCE_QUESTIONS,
   isGuidanceStart,
+  LISTING_LIMITS,
   nextGuidanceQuestion,
   type BusinessProfile,
   type MembershipTier,
@@ -40,6 +42,15 @@ import {
   isTrainingStart,
   type SkillGapOutcome,
 } from "@/lib/trade/training";
+import {
+  buildListing,
+  getDemandSignal,
+  isBrowseRequest,
+  isListingStart,
+  LISTING_QUESTIONS,
+  nextListingQuestion,
+  type Listing,
+} from "@/lib/trade/marketplace";
 import {
   BUSINESS_PLAN_QUESTIONS,
   buildBusinessPlanSummary,
@@ -95,7 +106,10 @@ type Message =
   | { id: string; role: "assistant"; kind: "business-plan"; summary: BusinessPlanSummary }
   | { id: string; role: "assistant"; kind: "projections"; years: ProjectionYear[] }
   | { id: string; role: "assistant"; kind: "skill-gap"; outcome: SkillGapOutcome }
-  | { id: string; role: "assistant"; kind: "course-complete"; courseTitle: string };
+  | { id: string; role: "assistant"; kind: "course-complete"; courseTitle: string }
+  | { id: string; role: "assistant"; kind: "listings-browse"; listings: Listing[] }
+  | { id: string; role: "assistant"; kind: "listing-created"; listing: Listing }
+  | { id: string; role: "assistant"; kind: "listing-limit"; tier: MembershipTier; limit: number };
 
 const AGENT_ICONS: Record<AgentId, typeof Compass> = {
   guidance: Compass,
@@ -199,6 +213,11 @@ export function TradePlatform() {
     answers: {},
   });
   const [completedCourses, setCompletedCourses] = useState<Set<string>>(new Set());
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [listingState, setListingState] = useState<{ active: boolean; answers: Record<string, string> }>({
+    active: false,
+    answers: {},
+  });
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? window.localStorage.getItem("reset-trade-territory") : null;
@@ -407,6 +426,69 @@ export function TradePlatform() {
       return;
     }
 
+    if (listingState.active) {
+      const current = nextListingQuestion(listingState.answers);
+      if (current) {
+        const answers = { ...listingState.answers, [current.key]: query };
+        const following = nextListingQuestion(answers);
+        if (following) {
+          setListingState({ active: true, answers });
+          setMessages((m) => [
+            ...m,
+            {
+              id: uid(),
+              role: "assistant",
+              kind: "text-question",
+              question: following.question,
+              step: Object.keys(answers).length + 1,
+              total: LISTING_QUESTIONS.length,
+              name: following.name,
+            },
+          ]);
+        } else {
+          setListingState({ active: false, answers: {} });
+          const listing = buildListing(answers, uid());
+          setListings((prev) => [...prev, listing]);
+          setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "listing-created", listing }]);
+        }
+        setBusy(false);
+        return;
+      }
+    }
+
+    if (isBrowseRequest(q)) {
+      setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "listings-browse", listings }]);
+      setBusy(false);
+      return;
+    }
+
+    if (!listingState.active && isListingStart(q)) {
+      if (!canCreateListing(memberTier, listings.length)) {
+        setMessages((m) => [
+          ...m,
+          { id: uid(), role: "assistant", kind: "listing-limit", tier: memberTier, limit: LISTING_LIMITS[memberTier] },
+        ]);
+        setBusy(false);
+        return;
+      }
+      const first = LISTING_QUESTIONS[0];
+      setListingState({ active: true, answers: {} });
+      setMessages((m) => [
+        ...m,
+        {
+          id: uid(),
+          role: "assistant",
+          kind: "text-question",
+          question: first.question,
+          step: 1,
+          total: LISTING_QUESTIONS.length,
+          name: first.name,
+        },
+      ]);
+      setBusy(false);
+      return;
+    }
+
     const completingCourse = isCourseCompletion(q);
     if (completingCourse) {
       if (gated("training")) return;
@@ -529,6 +611,9 @@ export function TradePlatform() {
     setGuidanceState({ active: false, answers: {} });
     setPlanState({ active: false, answers: {} });
     setProjectionState({ active: false, answers: {} });
+    setListingState({ active: false, answers: {} });
+    setListings([]);
+    setCompletedCourses(new Set());
     setMemberTier("Guest");
     setInput("");
   }
@@ -682,6 +767,27 @@ export function TradePlatform() {
             >
               <GraduationCap className="size-4 shrink-0" strokeWidth={1.75} />
               Skill Gap Analysis
+            </button>
+          </div>
+          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
+            Marketplace
+          </p>
+          <div className="hidden flex-col gap-1 lg:flex">
+            <button
+              type="button"
+              onClick={() => send("browse marketplace")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Store className="size-4 shrink-0" strokeWidth={1.75} />
+              Browse Marketplace
+            </button>
+            <button
+              type="button"
+              onClick={() => send("create listing")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Store className="size-4 shrink-0" strokeWidth={1.75} />
+              Create Listing
             </button>
           </div>
           <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
@@ -1183,6 +1289,79 @@ function MessageView({
           Marked "{message.courseTitle}" complete for this session. This doesn't automatically change your stored
           evaluation score — re-take the 6-Domain Evaluation to reflect genuine improvement in your domain scores, per
           how the spec says training completions feed scoring.
+        </p>
+      </article>
+    );
+  }
+
+  if (message.kind === "listings-browse") {
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Marketplace Listings</p>
+        {message.listings.length === 0 ? (
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            No listings yet this session. Create one to see it appear here — listings are session-only; real
+            persistence across visits would need a backend.
+          </p>
+        ) : (
+          <div className="mt-3 flex flex-col gap-3">
+            {message.listings.map((l) => (
+              <div key={l.id} className="rounded-lg border border-border p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium">{l.title}</p>
+                  <Badge>{l.qualityScore}/100</Badge>
+                </div>
+                <p className="mt-1 text-xs text-muted">{l.category}</p>
+                <p className="mt-1 text-xs leading-relaxed">{l.description}</p>
+                <p className="mt-1 text-xs text-subtle">{l.price}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </article>
+    );
+  }
+
+  if (message.kind === "listing-created") {
+    const { listing } = message;
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Listing Created</p>
+        <p className="mt-2 text-sm font-medium">{listing.title}</p>
+        <div className="mt-2 flex flex-wrap items-end gap-3">
+          <p className="font-display text-3xl font-medium tabular-nums tracking-tight">
+            {listing.qualityScore}
+            <span className="text-base text-muted">/100 quality</span>
+          </p>
+        </div>
+        <ul className="mt-3 space-y-1.5 text-xs leading-relaxed">
+          {listing.qualityFactors.map((f) => (
+            <li key={f.label} className="flex gap-2">
+              <span className={cn("mt-1 size-1.5 shrink-0 rounded-full", f.met ? "bg-status-green" : "bg-status-red")} />
+              <span className={f.met ? "" : "text-muted"}>{f.label}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 border-t border-border pt-4">
+          <p className="text-xs font-medium tracking-wide text-subtle uppercase">Demand Signal</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted">{getDemandSignal(listing.category)}</p>
+        </div>
+        <p className="mt-3 text-xs leading-relaxed text-subtle">
+          This listing would feed your Market Potential domain score in a full implementation — re-take the 6-Domain
+          Evaluation to reflect genuine improvement.
+        </p>
+      </article>
+    );
+  }
+
+  if (message.kind === "listing-limit") {
+    return (
+      <article className="rounded-xl border border-dashed border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Listing Limit Reached</p>
+        <p className="mt-3 text-sm leading-relaxed">
+          Your <strong>{message.tier}</strong> tier allows{" "}
+          {message.limit === Infinity ? "unlimited" : message.limit} listing{message.limit === 1 ? "" : "s"}. Use the
+          "Simulated Membership" selector to try a higher tier.
         </p>
       </article>
     );

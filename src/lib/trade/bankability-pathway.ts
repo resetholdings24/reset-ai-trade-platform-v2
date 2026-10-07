@@ -59,7 +59,13 @@ const DOMAIN_INTERVENTIONS: Record<string, { category: string; action: string; p
     { category: "Tailored Training Solutions", action: "Complete financial literacy training.", prompt: "skill gap analysis" },
     { category: "Technology Tools & Apps", action: "Adopt accounting tools to strengthen financial record-keeping." },
   ],
-  market_potential: [{ category: "Online Marketplace", action: "Build transaction history and buyer connections on the Marketplace." }],
+  market_potential: [
+    {
+      category: "Online Marketplace",
+      action: "Build transaction history and buyer connections on the Marketplace.",
+      prompt: "create listing",
+    },
+  ],
 };
 
 export function isPathwayRequest(q: string) {
