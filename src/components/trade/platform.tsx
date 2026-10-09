@@ -7,6 +7,7 @@ import {
   Handshake,
   Landmark,
   MapPin,
+  Menu,
   RotateCcw,
   Route,
   Scale,
@@ -16,6 +17,7 @@ import {
   Store,
   Wallet,
   FileCheck,
+  X,
 } from "lucide-react";
 import { askGrok } from "@/lib/ai/ask-grok";
 import { applyAssessment, routeQuery, type AssessmentState } from "@/lib/trade/engine";
@@ -198,6 +200,7 @@ export function TradePlatform() {
   const [assessment, setAssessment] = useState<AssessmentState>({ active: false, kind: null, answers: {} });
   const [territory, setTerritory] = useState<string | null>(null);
   const [expandedLayer, setExpandedLayer] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [lastBscResult, setLastBscResult] = useState<BSCEvaluationResult | null>(null);
   const [memberTier, setMemberTier] = useState<MembershipTier>("Guest");
   const [guidanceState, setGuidanceState] = useState<{ active: boolean; answers: Record<string, string> }>({
@@ -614,6 +617,7 @@ export function TradePlatform() {
     setListingState({ active: false, answers: {} });
     setListings([]);
     setCompletedCourses(new Set());
+    setMobileMenuOpen(false);
     setMemberTier("Guest");
     setInput("");
   }
@@ -626,9 +630,200 @@ export function TradePlatform() {
     : null;
   const progressTotal = assessment.kind === "bsc" ? 6 : 5;
 
+  const navSections = (
+    <>
+          <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
+            Tools
+          </p>
+          <div className="flex flex-col gap-1">
+            {TOOLS.map((t, i) => {
+              const Icon = TOOL_ICONS[i];
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => send(t.prompt)}
+                  className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+                >
+                  <Icon className="size-4 shrink-0" strokeWidth={1.75} />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
+            Location Intelligence
+          </p>
+          <div className="flex flex-col gap-1">
+            {LOCATION_LAYERS.map((layer) => {
+              const isOpen = expandedLayer === layer.id;
+              return (
+                <div key={layer.id}>
+                  <button
+                    type="button"
+                    data-keep-open
+                    onClick={() => setExpandedLayer(isOpen ? null : layer.id)}
+                    className="flex min-h-11 w-full items-center justify-between gap-2 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+                  >
+                    <span className="flex items-center gap-3">
+                      <MapPin className="size-4 shrink-0" strokeWidth={1.75} />
+                      {layer.label}
+                    </span>
+                    <span className="text-xs text-subtle">{isOpen ? "–" : "+"}</span>
+                  </button>
+                  {isOpen ? (
+                    <div className="ml-7 flex flex-col gap-0.5 border-l border-border pl-3">
+                      {layer.options.map((opt) => (
+                        <button
+                          key={opt.label}
+                          type="button"
+                          onClick={() => send(opt.prompt)}
+                          className="rounded-md px-2 py-1.5 text-left text-xs text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
+            Business Guidance
+          </p>
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => send("business guidance")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Compass className="size-4 shrink-0" strokeWidth={1.75} />
+              Create My Business Profile
+            </button>
+          </div>
+          <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
+            Consulting
+          </p>
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => send("business plan")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Handshake className="size-4 shrink-0" strokeWidth={1.75} />
+              Business Plan Builder
+            </button>
+            <button
+              type="button"
+              onClick={() => send("financial projections")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Wallet className="size-4 shrink-0" strokeWidth={1.75} />
+              Financial Projections
+            </button>
+          </div>
+          <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
+            Training
+          </p>
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => send("skill gap analysis")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <GraduationCap className="size-4 shrink-0" strokeWidth={1.75} />
+              Skill Gap Analysis
+            </button>
+          </div>
+          <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
+            Marketplace
+          </p>
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => send("browse marketplace")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Store className="size-4 shrink-0" strokeWidth={1.75} />
+              Browse Marketplace
+            </button>
+            <button
+              type="button"
+              onClick={() => send("create listing")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Store className="size-4 shrink-0" strokeWidth={1.75} />
+              Create Listing
+            </button>
+          </div>
+          <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
+            BSC Bankability
+          </p>
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => send("6-Domain Evaluation")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <ClipboardCheck className="size-4 shrink-0" strokeWidth={1.75} />
+              6-Domain Evaluation
+            </button>
+            <button
+              type="button"
+              onClick={() => send("bankability pathway")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Route className="size-4 shrink-0" strokeWidth={1.75} />
+              View My Pathway
+            </button>
+            <button
+              type="button"
+              onClick={() => send("find financing")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Handshake className="size-4 shrink-0" strokeWidth={1.75} />
+              Find Financing Matches
+            </button>
+            <button
+              type="button"
+              onClick={() => send("risk monitoring check")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <ShieldAlert className="size-4 shrink-0" strokeWidth={1.75} />
+              Risk Monitoring Check
+            </button>
+          </div>
+          <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
+            Simulated Membership
+          </p>
+          <div className="flex flex-wrap gap-1.5 px-1">
+            {(["Guest", "Basic", "Premium", "Enterprise"] as MembershipTier[]).map((tier) => (
+              <button
+                key={tier}
+                type="button"
+                data-keep-open
+                onClick={() => setMemberTier(tier)}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-xs transition-colors duration-150",
+                  memberTier === tier
+                    ? "border-accent/40 bg-elevated text-fg"
+                    : "border-border text-muted hover:bg-elevated hover:text-fg",
+                )}
+              >
+                {tier}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1.5 px-1 text-[11px] leading-relaxed text-subtle">
+            No real billing exists — this switches a demo tier to show the gating logic described in the spec.
+          </p>
+    </>
+  );
+
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-fg lg:flex-row">
-      <aside className="border-b border-border bg-surface lg:flex lg:w-72 lg:shrink-0 lg:flex-col lg:border-b-0 lg:border-r">
+    <div className="flex min-h-dvh flex-col bg-bg text-fg lg:h-dvh lg:flex-row lg:overflow-hidden">
+      <aside className="border-b border-border bg-surface lg:flex lg:w-72 lg:shrink-0 lg:flex-col lg:overflow-y-auto lg:border-b-0 lg:border-r">
         <div className="px-5 py-5 lg:px-6 lg:py-7">
           <p className="font-display text-xs font-medium tracking-[0.18em] text-muted uppercase">
             Caribbean SMEs
@@ -666,190 +861,9 @@ export function TradePlatform() {
               );
             })}
           </div>
-          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
-            Tools
-          </p>
-          <div className="hidden flex-col gap-1 lg:flex">
-            {TOOLS.map((t, i) => {
-              const Icon = TOOL_ICONS[i];
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => send(t.prompt)}
-                  className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-                >
-                  <Icon className="size-4 shrink-0" strokeWidth={1.75} />
-                  {t.label}
-                </button>
-              );
-            })}
+          <div className="hidden lg:block">
+            {navSections}
           </div>
-          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
-            Location Intelligence
-          </p>
-          <div className="hidden flex-col gap-1 lg:flex">
-            {LOCATION_LAYERS.map((layer) => {
-              const isOpen = expandedLayer === layer.id;
-              return (
-                <div key={layer.id}>
-                  <button
-                    type="button"
-                    onClick={() => setExpandedLayer(isOpen ? null : layer.id)}
-                    className="flex min-h-11 w-full items-center justify-between gap-2 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-                  >
-                    <span className="flex items-center gap-3">
-                      <MapPin className="size-4 shrink-0" strokeWidth={1.75} />
-                      {layer.label}
-                    </span>
-                    <span className="text-xs text-subtle">{isOpen ? "–" : "+"}</span>
-                  </button>
-                  {isOpen ? (
-                    <div className="ml-7 flex flex-col gap-0.5 border-l border-border pl-3">
-                      {layer.options.map((opt) => (
-                        <button
-                          key={opt.label}
-                          type="button"
-                          onClick={() => send(opt.prompt)}
-                          className="rounded-md px-2 py-1.5 text-left text-xs text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
-          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
-            Business Guidance
-          </p>
-          <div className="hidden flex-col gap-1 lg:flex">
-            <button
-              type="button"
-              onClick={() => send("business guidance")}
-              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-            >
-              <Compass className="size-4 shrink-0" strokeWidth={1.75} />
-              Create My Business Profile
-            </button>
-          </div>
-          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
-            Consulting
-          </p>
-          <div className="hidden flex-col gap-1 lg:flex">
-            <button
-              type="button"
-              onClick={() => send("business plan")}
-              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-            >
-              <Handshake className="size-4 shrink-0" strokeWidth={1.75} />
-              Business Plan Builder
-            </button>
-            <button
-              type="button"
-              onClick={() => send("financial projections")}
-              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-            >
-              <Wallet className="size-4 shrink-0" strokeWidth={1.75} />
-              Financial Projections
-            </button>
-          </div>
-          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
-            Training
-          </p>
-          <div className="hidden flex-col gap-1 lg:flex">
-            <button
-              type="button"
-              onClick={() => send("skill gap analysis")}
-              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-            >
-              <GraduationCap className="size-4 shrink-0" strokeWidth={1.75} />
-              Skill Gap Analysis
-            </button>
-          </div>
-          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
-            Marketplace
-          </p>
-          <div className="hidden flex-col gap-1 lg:flex">
-            <button
-              type="button"
-              onClick={() => send("browse marketplace")}
-              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-            >
-              <Store className="size-4 shrink-0" strokeWidth={1.75} />
-              Browse Marketplace
-            </button>
-            <button
-              type="button"
-              onClick={() => send("create listing")}
-              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-            >
-              <Store className="size-4 shrink-0" strokeWidth={1.75} />
-              Create Listing
-            </button>
-          </div>
-          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
-            BSC Bankability
-          </p>
-          <div className="hidden flex-col gap-1 lg:flex">
-            <button
-              type="button"
-              onClick={() => send("6-Domain Evaluation")}
-              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-            >
-              <ClipboardCheck className="size-4 shrink-0" strokeWidth={1.75} />
-              6-Domain Evaluation
-            </button>
-            <button
-              type="button"
-              onClick={() => send("bankability pathway")}
-              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-            >
-              <Route className="size-4 shrink-0" strokeWidth={1.75} />
-              View My Pathway
-            </button>
-            <button
-              type="button"
-              onClick={() => send("find financing")}
-              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-            >
-              <Handshake className="size-4 shrink-0" strokeWidth={1.75} />
-              Find Financing Matches
-            </button>
-            <button
-              type="button"
-              onClick={() => send("risk monitoring check")}
-              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
-            >
-              <ShieldAlert className="size-4 shrink-0" strokeWidth={1.75} />
-              Risk Monitoring Check
-            </button>
-          </div>
-          <p className="mt-4 mb-2 hidden px-1 text-xs font-medium tracking-wide text-subtle uppercase lg:block">
-            Simulated Membership
-          </p>
-          <div className="hidden flex-wrap gap-1.5 px-1 lg:flex">
-            {(["Guest", "Basic", "Premium", "Enterprise"] as MembershipTier[]).map((tier) => (
-              <button
-                key={tier}
-                type="button"
-                onClick={() => setMemberTier(tier)}
-                className={cn(
-                  "rounded-full border px-2.5 py-1 text-xs transition-colors duration-150",
-                  memberTier === tier
-                    ? "border-accent/40 bg-elevated text-fg"
-                    : "border-border text-muted hover:bg-elevated hover:text-fg",
-                )}
-              >
-                {tier}
-              </button>
-            ))}
-          </div>
-          <p className="mt-1.5 hidden px-1 text-[11px] leading-relaxed text-subtle lg:block">
-            No real billing exists — this switches a demo tier to show the gating logic described in the spec.
-          </p>
         </div>
         <div className="hidden border-t border-border px-5 py-4 lg:block">
           <Button variant="ghost" size="sm" className="w-full justify-start" onClick={reset}>
@@ -859,15 +873,49 @@ export function TradePlatform() {
         </div>
       </aside>
 
+      {mobileMenuOpen ? (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} aria-hidden="true" />
+          <div
+            className="absolute inset-y-0 left-0 flex w-80 max-w-[85vw] flex-col overflow-y-auto bg-surface px-4 py-5"
+            role="dialog"
+            aria-label="Menu"
+            onClick={(e) => {
+              const btn = (e.target as HTMLElement).closest("button");
+              if (btn && !btn.hasAttribute("data-keep-open")) setMobileMenuOpen(false);
+            }}
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <p className="font-display text-lg font-medium tracking-tight">Menu</p>
+              <Button variant="ghost" size="icon" aria-label="Close menu">
+                <X className="size-4" />
+              </Button>
+            </div>
+            {navSections}
+            <div className="mt-6 border-t border-border pt-4">
+              <Button variant="ghost" size="sm" className="w-full justify-start" onClick={reset}>
+                <RotateCcw className="size-4" />
+                New conversation
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <section className="flex min-h-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-border px-4 py-3 lg:px-8">
           <div>
             <p className="text-sm font-medium">{AGENTS[agent].label} desk</p>
             <p className="text-xs text-muted">{AGENTS[agent].description}</p>
           </div>
-          <Button variant="ghost" size="icon" className="lg:hidden" onClick={reset} aria-label="New conversation">
-            <RotateCcw className="size-4" />
-          </Button>
+          <div className="flex items-center gap-1 lg:hidden">
+            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(true)} aria-label="Open menu">
+              <Menu className="size-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={reset} aria-label="New conversation">
+              <RotateCcw className="size-4" />
+            </Button>
+          </div>
         </header>
 
         {assessment.active && currentDim ? (
@@ -889,6 +937,31 @@ export function TradePlatform() {
           <div className="mx-auto flex max-w-2xl flex-col gap-4">
             {messages.length === 1 ? (
               <>
+                <div className="rounded-lg border border-border bg-elevated p-4">
+                  <p className="font-display text-base font-medium tracking-tight">Welcome to RESET Trade & BSC</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">
+                    This platform has two connected parts. <strong className="text-fg">Trade Intelligence</strong>{" "}
+                    covers six tools — export readiness, the EPA, market access, export finance, procurement, and
+                    trade agreements. The <strong className="text-fg">Business Support Centre</strong> evaluates your
+                    business across 6 domains, builds a path toward bankability certification, and connects you to
+                    financing, consulting, training, and the marketplace.
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">
+                    Not sure where to start? Create a quick business profile and we'll suggest the right next step.
+                  </p>
+                  <p className="mt-2 text-xs leading-relaxed text-subtle">
+                    Note: some Business Support Centre features require "Basic" membership or higher. This is
+                    simulated for now (no real billing) — switch freely using the selector in the sidebar.
+                  </p>
+                  <div className="mt-3">
+                    <Button type="button" size="sm" onClick={() => send("business guidance")}>
+                      Create My Business Profile
+                    </Button>
+                  </div>
+                  <p className="mt-3 text-xs text-subtle">
+                    Or jump straight to a Trade Intelligence tool below, or explore the sidebar for everything else.
+                  </p>
+                </div>
                 <div className="rounded-lg border border-border bg-surface p-3">
                   <p className="text-xs font-medium tracking-wide text-subtle uppercase">Where are you based?</p>
                   <div className="mt-2 flex flex-wrap gap-2">
