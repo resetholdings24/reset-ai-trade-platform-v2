@@ -37,7 +37,7 @@ export type PathwayPhase = {
 //   - Tailored Training (financial literacy) + Technology Tools (accounting) → Financial Capability
 //   - Online Marketplace activity → Market Potential
 const DOMAIN_INTERVENTIONS: Record<string, { category: string; action: string; prompt?: string }[]> = {
-  technology: [{ category: "Technology Tools & Apps", action: "Adopt digital tools and strengthen cybersecurity practices." }],
+  technology: [{ category: "Technology Tools & Apps", action: "Adopt digital tools and strengthen cybersecurity practices.", prompt: "recommend tools" }],
   management: [
     {
       category: "Business Advice & Consulting",
@@ -57,7 +57,7 @@ const DOMAIN_INTERVENTIONS: Record<string, { category: string; action: string; p
   ],
   financial: [
     { category: "Tailored Training Solutions", action: "Complete financial literacy training.", prompt: "skill gap analysis" },
-    { category: "Technology Tools & Apps", action: "Adopt accounting tools to strengthen financial record-keeping." },
+    { category: "Technology Tools & Apps", action: "Adopt accounting tools to strengthen financial record-keeping.", prompt: "recommend tools" },
   ],
   market_potential: [
     {

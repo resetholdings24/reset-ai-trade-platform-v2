@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  BookOpen,
   CircleCheck,
   ClipboardCheck,
   Compass,
@@ -15,7 +16,9 @@ import {
   Send,
   Ship,
   Store,
+  Users,
   Wallet,
+  Wrench,
   FileCheck,
   X,
 } from "lucide-react";
@@ -53,6 +56,42 @@ import {
   nextListingQuestion,
   type Listing,
 } from "@/lib/trade/marketplace";
+import {
+  getToolRecommendations,
+  isToolRecommendation,
+  isToolsDirectory,
+  parseAdoptTool,
+  parseToolsCategory,
+  TOOL_CATEGORIES,
+  toolsInCategory,
+  type Tool,
+  type ToolCategoryKey,
+  type ToolRecOutcome,
+} from "@/lib/trade/tech-tools";
+import {
+  countByCategory,
+  getResourceById,
+  isResourceLibrary,
+  parseOpenResource,
+  parseResourceCategory,
+  parseResourceSearch,
+  RESOURCE_CATEGORIES,
+  resourcesInCategory,
+  searchResources,
+  suggestResourcesForProfile,
+  type Resource,
+  type ResourceCategoryKey,
+} from "@/lib/trade/resources";
+import {
+  buildOutreachDraft,
+  isPartnerDirectory,
+  orgsInCategory,
+  parseOutreachDraft,
+  parsePartnerCategory,
+  PARTNER_CATEGORIES,
+  type PartnerCategoryKey,
+  type SupportOrg,
+} from "@/lib/trade/partners";
 import {
   BUSINESS_PLAN_QUESTIONS,
   buildBusinessPlanSummary,
@@ -102,7 +141,14 @@ type Message =
       name: string;
       options: readonly string[];
     }
-  | { id: string; role: "assistant"; kind: "profile"; profile: BusinessProfile; suggestedNextStep: string }
+  | {
+      id: string;
+      role: "assistant";
+      kind: "profile";
+      profile: BusinessProfile;
+      suggestedNextStep: string;
+      resources?: { id: string; title: string }[];
+    }
   | { id: string; role: "assistant"; kind: "gate"; feature: string; requiredTier: MembershipTier }
   | { id: string; role: "assistant"; kind: "text-question"; question: string; step: number; total: number; name: string }
   | { id: string; role: "assistant"; kind: "business-plan"; summary: BusinessPlanSummary }
@@ -111,7 +157,21 @@ type Message =
   | { id: string; role: "assistant"; kind: "course-complete"; courseTitle: string }
   | { id: string; role: "assistant"; kind: "listings-browse"; listings: Listing[] }
   | { id: string; role: "assistant"; kind: "listing-created"; listing: Listing }
-  | { id: string; role: "assistant"; kind: "listing-limit"; tier: MembershipTier; limit: number };
+  | { id: string; role: "assistant"; kind: "listing-limit"; tier: MembershipTier; limit: number }
+  | { id: string; role: "assistant"; kind: "notice"; title: string; text: string }
+  | { id: string; role: "assistant"; kind: "tool-directory"; category: ToolCategoryKey | null; tools: Tool[] }
+  | { id: string; role: "assistant"; kind: "tool-recommendations"; outcome: ToolRecOutcome }
+  | {
+      id: string;
+      role: "assistant";
+      kind: "resource-directory";
+      category: ResourceCategoryKey | null;
+      query: string | null;
+      resources: Resource[];
+      counts: Record<string, number>;
+    }
+  | { id: string; role: "assistant"; kind: "partner-directory"; category: PartnerCategoryKey | null; orgs: SupportOrg[] }
+  | { id: string; role: "assistant"; kind: "outreach-draft"; org: SupportOrg; text: string; hasProfile: boolean };
 
 const AGENT_ICONS: Record<AgentId, typeof Compass> = {
   guidance: Compass,
@@ -201,6 +261,8 @@ export function TradePlatform() {
   const [territory, setTerritory] = useState<string | null>(null);
   const [expandedLayer, setExpandedLayer] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [adoptedTools, setAdoptedTools] = useState<Set<string>>(new Set());
+  const [businessProfile, setBusinessProfile] = useState<BusinessProfile | null>(null);
   const [lastBscResult, setLastBscResult] = useState<BSCEvaluationResult | null>(null);
   const [memberTier, setMemberTier] = useState<MembershipTier>("Guest");
   const [guidanceState, setGuidanceState] = useState<{ active: boolean; answers: Record<string, string> }>({
@@ -285,7 +347,18 @@ export function TradePlatform() {
         } else {
           setGuidanceState({ active: false, answers: {} });
           const { profile, suggestedNextStep } = buildProfile(answers);
-          setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "profile", profile, suggestedNextStep }]);
+          setBusinessProfile(profile);
+          setMessages((m) => [
+            ...m,
+            {
+              id: uid(),
+              role: "assistant",
+              kind: "profile",
+              profile,
+              suggestedNextStep,
+              resources: suggestResourcesForProfile(profile),
+            },
+          ]);
         }
         setBusy(false);
         return;
@@ -368,6 +441,158 @@ export function TradePlatform() {
         setBusy(false);
         return;
       }
+    }
+
+    if (isToolsDirectory(q)) {
+      setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "tool-directory", category: null, tools: [] }]);
+      setBusy(false);
+      return;
+    }
+
+    const toolCategory = parseToolsCategory(q);
+    if (toolCategory) {
+      setMessages((m) => [
+        ...m,
+        { id: uid(), role: "assistant", kind: "tool-directory", category: toolCategory, tools: toolsInCategory(toolCategory) },
+      ]);
+      setBusy(false);
+      return;
+    }
+
+    if (isToolRecommendation(q)) {
+      if (gated("toolRecommendations")) return;
+      const outcome = getToolRecommendations(lastBscResult, businessProfile);
+      setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "tool-recommendations", outcome }]);
+      setBusy(false);
+      return;
+    }
+
+    const adoptingTool = parseAdoptTool(q);
+    if (adoptingTool) {
+      if (gated("toolRecommendations")) return;
+      setAdoptedTools((prev) => new Set(prev).add(adoptingTool.id));
+      setMessages((m) => [
+        ...m,
+        {
+          id: uid(),
+          role: "assistant",
+          kind: "notice",
+          title: "Tool Marked as Adopted",
+          text: `Marked "${adoptingTool.name}" as adopted for this session. Per the BSC spec, adopting the right tools counts as evidence toward your Technology Capability (accounting tools also feed Financial Capability). This doesn't change your stored evaluation score — re-take the 6-Domain Evaluation to reflect real progress.`,
+        },
+      ]);
+      setBusy(false);
+      return;
+    }
+
+    const resourceQuery = parseResourceSearch(q);
+    if (resourceQuery !== null) {
+      setMessages((m) => [
+        ...m,
+        {
+          id: uid(),
+          role: "assistant",
+          kind: "resource-directory",
+          category: null,
+          query: resourceQuery || null,
+          resources: resourceQuery ? searchResources(resourceQuery) : [],
+          counts: countByCategory(),
+        },
+      ]);
+      setBusy(false);
+      return;
+    }
+
+    if (isResourceLibrary(q)) {
+      setMessages((m) => [
+        ...m,
+        {
+          id: uid(),
+          role: "assistant",
+          kind: "resource-directory",
+          category: null,
+          query: null,
+          resources: [],
+          counts: countByCategory(),
+        },
+      ]);
+      setBusy(false);
+      return;
+    }
+
+    const resourceCategory = parseResourceCategory(q);
+    if (resourceCategory) {
+      setMessages((m) => [
+        ...m,
+        {
+          id: uid(),
+          role: "assistant",
+          kind: "resource-directory",
+          category: resourceCategory,
+          query: null,
+          resources: resourcesInCategory(resourceCategory),
+          counts: countByCategory(),
+        },
+      ]);
+      setBusy(false);
+      return;
+    }
+
+    const openingId = parseOpenResource(q);
+    if (openingId) {
+      const resource = getResourceById(openingId);
+      if (resource?.card) {
+        if (gated("resourcesOpen")) return;
+        const card = resource.card;
+        setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "knowledge", card }]);
+      } else {
+        setMessages((m) => [
+          ...m,
+          {
+            id: uid(),
+            role: "assistant",
+            kind: "notice",
+            title: "Resource Not Found",
+            text: 'That resource isn\'t in the library. Try "resource library" to browse what is available.',
+          },
+        ]);
+      }
+      setBusy(false);
+      return;
+    }
+
+    if (isPartnerDirectory(q)) {
+      setMessages((m) => [...m, { id: uid(), role: "assistant", kind: "partner-directory", category: null, orgs: [] }]);
+      setBusy(false);
+      return;
+    }
+
+    const partnerCategory = parsePartnerCategory(q);
+    if (partnerCategory) {
+      setMessages((m) => [
+        ...m,
+        { id: uid(), role: "assistant", kind: "partner-directory", category: partnerCategory, orgs: orgsInCategory(partnerCategory) },
+      ]);
+      setBusy(false);
+      return;
+    }
+
+    const draftOrg = parseOutreachDraft(q);
+    if (draftOrg) {
+      if (gated("partnerConnect")) return;
+      setMessages((m) => [
+        ...m,
+        {
+          id: uid(),
+          role: "assistant",
+          kind: "outreach-draft",
+          org: draftOrg,
+          text: buildOutreachDraft(draftOrg, businessProfile),
+          hasProfile: businessProfile !== null,
+        },
+      ]);
+      setBusy(false);
+      return;
     }
 
     if (!guidanceState.active && isGuidanceStart(q)) {
@@ -617,6 +842,8 @@ export function TradePlatform() {
     setListingState({ active: false, answers: {} });
     setListings([]);
     setCompletedCourses(new Set());
+    setAdoptedTools(new Set());
+    setBusinessProfile(null);
     setMobileMenuOpen(false);
     setMemberTier("Guest");
     setInput("");
@@ -755,6 +982,53 @@ export function TradePlatform() {
             >
               <Store className="size-4 shrink-0" strokeWidth={1.75} />
               Create Listing
+            </button>
+          </div>
+          <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
+            Technology Tools
+          </p>
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => send("tools directory")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Wrench className="size-4 shrink-0" strokeWidth={1.75} />
+              Browse Tools Directory
+            </button>
+            <button
+              type="button"
+              onClick={() => send("recommend tools")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Wrench className="size-4 shrink-0" strokeWidth={1.75} />
+              Recommend Tools For Me
+            </button>
+          </div>
+          <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
+            Resource Library
+          </p>
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => send("resource library")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <BookOpen className="size-4 shrink-0" strokeWidth={1.75} />
+              Browse Library
+            </button>
+          </div>
+          <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
+            Partner Network
+          </p>
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => send("partner directory")}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 text-left text-sm text-muted transition-colors duration-150 hover:bg-elevated hover:text-fg"
+            >
+              <Users className="size-4 shrink-0" strokeWidth={1.75} />
+              Support Organisations
             </button>
           </div>
           <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
@@ -1010,7 +1284,7 @@ export function TradePlatform() {
             ) : null}
 
             {messages.map((msg) => (
-              <MessageView key={msg.id} message={msg} onRelated={(p) => send(p)} completedCourses={completedCourses} />
+              <MessageView key={msg.id} message={msg} onRelated={(p) => send(p)} completedCourses={completedCourses} adoptedTools={adoptedTools} />
             ))}
 
             {busy ? (
@@ -1066,10 +1340,12 @@ function MessageView({
   message,
   onRelated,
   completedCourses,
+  adoptedTools,
 }: {
   message: Message;
   onRelated: (prompt: string) => void;
   completedCourses: Set<string>;
+  adoptedTools: Set<string>;
 }) {
   if (message.role === "user") {
     return (
@@ -1440,8 +1716,251 @@ function MessageView({
     );
   }
 
+  if (message.kind === "notice") {
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">{message.title}</p>
+        <p className="mt-3 text-sm leading-relaxed">{message.text}</p>
+      </article>
+    );
+  }
+
+  if (message.kind === "tool-directory") {
+    const categoryLabel = TOOL_CATEGORIES.find((c) => c.key === message.category)?.label;
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Technology Tools & Apps</p>
+        <div className="mt-2 rounded-md border border-dashed border-border bg-elevated/60 px-3 py-2 text-xs leading-relaxed text-muted">
+          An illustrative starter list of well-known products, shown for reference. They are not vetted, rated, or
+          endorsed by RESET, and no affiliate or sponsorship relationships exist. Check availability, pricing, and
+          support for your territory before adopting anything.
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {TOOL_CATEGORIES.map((c) => (
+            <Button
+              key={c.key}
+              type="button"
+              variant={message.category === c.key ? "default" : "secondary"}
+              size="sm"
+              onClick={() => onRelated(`tools category ${c.key}`)}
+            >
+              {c.label}
+            </Button>
+          ))}
+        </div>
+        {message.category === null ? (
+          <p className="mt-3 text-xs text-subtle">
+            Pick a category to see its tools, or get recommendations matched to your evaluation.
+          </p>
+        ) : (
+          <div className="mt-4 flex flex-col gap-3">
+            {categoryLabel ? <p className="text-sm font-medium">{categoryLabel}</p> : null}
+            {message.tools.map((tool) => (
+              <div key={tool.id} className="rounded-lg border border-border p-3">
+                <p className="text-sm font-medium">{tool.name}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted">{tool.description}</p>
+                <div className="mt-2">
+                  {adoptedTools.has(tool.id) ? (
+                    <Badge className="text-status-green border-status-green/40">Adopted</Badge>
+                  ) : (
+                    <Button type="button" variant="secondary" size="sm" onClick={() => onRelated(`adopt tool ${tool.id}`)}>
+                      Mark as adopted
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="mt-4 border-t border-border pt-4">
+          <Button type="button" variant="secondary" size="sm" onClick={() => onRelated("recommend tools")}>
+            Recommend tools for me
+          </Button>
+        </div>
+      </article>
+    );
+  }
+
+  if (message.kind === "tool-recommendations") {
+    const { outcome } = message;
+    if (!outcome.eligible) {
+      return (
+        <article className="rounded-xl border border-border bg-surface p-5">
+          <p className="text-xs font-medium tracking-wide text-subtle uppercase">Tool Recommendations</p>
+          <p className="mt-3 text-sm leading-relaxed">{outcome.reason}</p>
+        </article>
+      );
+    }
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Tool Recommendations</p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">{outcome.basis}</p>
+        <p className="mt-1 text-xs text-subtle">
+          Rule-based suggestions, not endorsements. These products are not vetted or rated by RESET.
+        </p>
+        {outcome.recs.length > 0 ? (
+          <div className="mt-4 flex flex-col gap-3">
+            {outcome.recs.map(({ tool, reason }) => (
+              <div key={tool.id} className="rounded-lg border border-border p-3">
+                <p className="text-sm font-medium">{tool.name}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted">{tool.description}</p>
+                <p className="mt-1 text-xs text-subtle">Why: {reason}</p>
+                <div className="mt-2">
+                  {adoptedTools.has(tool.id) ? (
+                    <Badge className="text-status-green border-status-green/40">Adopted</Badge>
+                  ) : (
+                    <Button type="button" variant="secondary" size="sm" onClick={() => onRelated(`adopt tool ${tool.id}`)}>
+                      Mark as adopted
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </article>
+    );
+  }
+
+  if (message.kind === "resource-directory") {
+    const categoryLabel = RESOURCE_CATEGORIES.find((c) => c.key === message.category)?.label;
+    const showingList = message.query !== null || message.category !== null;
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Resource Library</p>
+        <p className="mt-2 text-xs leading-relaxed text-muted">
+          An index of the guidance, templates, and tools already in this platform. Previewing is free; opening a full
+          resource needs Basic membership. Search is keyword-based — type "search resources" followed by a topic, for
+          example "search resources rules of origin".
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {RESOURCE_CATEGORIES.map((c) => (
+            <Button
+              key={c.key}
+              type="button"
+              variant={message.category === c.key ? "default" : "secondary"}
+              size="sm"
+              onClick={() => onRelated(`resources category ${c.key}`)}
+            >
+              {c.label} ({message.counts[c.key] ?? 0})
+            </Button>
+          ))}
+        </div>
+        {message.query !== null ? (
+          <p className="mt-4 text-sm text-muted">
+            {message.resources.length} result{message.resources.length === 1 ? "" : "s"} for "{message.query}"
+          </p>
+        ) : null}
+        {categoryLabel ? <p className="mt-4 text-sm font-medium">{categoryLabel}</p> : null}
+        {showingList && message.resources.length === 0 ? (
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            {message.category !== null
+              ? "Nothing here yet. There are no items in this category, and it won't be padded with made-up examples."
+              : "No matches. Try different words, or browse a category above."}
+          </p>
+        ) : null}
+        {message.resources.length > 0 ? (
+          <div className="mt-3 flex flex-col gap-3">
+            {message.resources.map((r) => (
+              <div key={r.id} className="rounded-lg border border-border p-3">
+                <p className="text-sm font-medium">{r.title}</p>
+                <p className="mt-0.5 text-xs text-subtle">
+                  {RESOURCE_CATEGORIES.find((c) => c.key === r.category)?.label}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted">{r.summary}</p>
+                <div className="mt-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => onRelated(r.kind === "tool" ? (r.action ?? r.title) : `open resource ${r.id}`)}
+                  >
+                    {r.kind === "tool" ? "Launch" : "Open"}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </article>
+    );
+  }
+
+  if (message.kind === "partner-directory") {
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Support Organisations</p>
+        <div className="mt-2 rounded-md border border-dashed border-border bg-elevated/60 px-3 py-2 text-xs leading-relaxed text-muted">
+          Real organisations listed for reference. They are not RESET partners, and no partnership, endorsement, or
+          referral arrangement is implied. Search each organisation directly for current programmes and contact
+          details.
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {PARTNER_CATEGORIES.map((c) => (
+            <Button
+              key={c.key}
+              type="button"
+              variant={message.category === c.key ? "default" : "secondary"}
+              size="sm"
+              onClick={() => onRelated(`partners category ${c.key}`)}
+            >
+              {c.label}
+            </Button>
+          ))}
+        </div>
+        {message.category === null ? (
+          <p className="mt-3 text-xs text-subtle">Pick a category to see organisations.</p>
+        ) : (
+          <div className="mt-4 flex flex-col gap-3">
+            {message.orgs.map((org) => (
+              <div key={org.id} className="rounded-lg border border-border p-3">
+                <p className="text-sm font-medium">{org.name}</p>
+                <p className="mt-0.5 text-xs text-subtle">{org.scope}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted">{org.role}</p>
+                <div className="mt-2">
+                  <Button type="button" variant="secondary" size="sm" onClick={() => onRelated(`draft outreach ${org.id}`)}>
+                    Draft an enquiry
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="mt-4 text-xs leading-relaxed text-subtle">
+          Mentorship matching and strategic partnerships (Premium and Enterprise in the spec) need real programmes and
+          agreements, and are not built yet.
+        </p>
+      </article>
+    );
+  }
+
+  if (message.kind === "outreach-draft") {
+    return (
+      <article className="rounded-xl border border-border bg-surface p-5">
+        <p className="text-xs font-medium tracking-wide text-subtle uppercase">Draft Enquiry</p>
+        <p className="mt-2 text-sm">To: {message.org.name}</p>
+        <pre className="mt-3 rounded-lg border border-border bg-elevated/60 p-3 text-xs leading-relaxed whitespace-pre-wrap">
+          {message.text}
+        </pre>
+        {!message.hasProfile ? (
+          <p className="mt-2 text-xs leading-relaxed text-muted">
+            Fill in the bracketed parts, or create a business profile first and this will fill them in for you.
+          </p>
+        ) : null}
+        <p className="mt-2 text-xs leading-relaxed text-subtle">
+          Nothing has been sent. Copy this and send it yourself through the organisation's own channels.
+        </p>
+        <div className="mt-3">
+          <Button type="button" variant="secondary" size="sm" onClick={() => void navigator.clipboard?.writeText(message.text)}>
+            Copy text
+          </Button>
+        </div>
+      </article>
+    );
+  }
+
   if (message.kind === "profile") {
-    const { profile, suggestedNextStep } = message;
+    const { profile, suggestedNextStep, resources } = message;
     return (
       <article className="rounded-xl border border-border bg-surface p-5">
         <p className="text-xs font-medium tracking-wide text-subtle uppercase">Business Profile Created</p>
@@ -1463,6 +1982,18 @@ function MessageView({
           <p className="text-xs font-medium tracking-wide text-subtle uppercase">Suggested Next Step</p>
           <p className="mt-2 text-sm leading-relaxed">{suggestedNextStep}</p>
         </div>
+        {resources?.length ? (
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="text-xs font-medium tracking-wide text-subtle uppercase">Helpful Resources</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {resources.map((r) => (
+                <Button key={r.id} type="button" variant="secondary" size="sm" onClick={() => onRelated(`open resource ${r.id}`)}>
+                  {r.title}
+                </Button>
+              ))}
+            </div>
+          </div>
+        ) : null}
         <div className="mt-4">
           <Button type="button" variant="secondary" size="sm" onClick={() => onRelated("6-Domain Evaluation")}>
             Start 6-Domain Evaluation
@@ -1478,6 +2009,11 @@ function MessageView({
       pathway: "the Bankability Pathway",
       matching: "AI Financial Matching",
       riskMonitoring: "the Risk Monitoring Check",
+      consulting: "the Consulting tools",
+      training: "Skill Gap Analysis",
+      toolRecommendations: "tool recommendations and adoption tracking",
+      resourcesOpen: "opening full resources",
+      partnerConnect: "drafting an enquiry to a support organisation",
     };
     return (
       <article className="rounded-xl border border-dashed border-border bg-surface p-5">
