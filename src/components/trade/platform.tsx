@@ -1,3 +1,4 @@
+import { AccountPanel } from "@/components/auth/account-panel";
 import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
@@ -859,6 +860,7 @@ export function TradePlatform() {
 
   const navSections = (
     <>
+          <AccountPanel />
           <p className="mt-4 mb-2 px-1 text-xs font-medium tracking-wide text-subtle uppercase">
             Tools
           </p>
