@@ -818,17 +818,23 @@ export function TradePlatform() {
         ...m,
         { id: uid(), role: "assistant", kind: "text", text: res.text },
       ]);
-    } catch {
+        } catch (err) {
+      const signedOut =
+        err instanceof Error &&
+        (err.name === "UnauthorizedError" || /unauthori[sz]ed/i.test(err.message));
       setMessages((m) => [
         ...m,
         {
           id: uid(),
           role: "assistant",
           kind: "text",
-          text: "Something went wrong reaching the advisor. Try a structured tool such as export readiness or EPA.",
+          text: signedOut
+            ? "Please sign in to chat with the advisor. The structured tools, such as export readiness and EPA, are still available."
+            : "Something went wrong reaching the advisor. Try a structured tool such as export readiness or EPA.",
         },
       ]);
     } finally {
+      {
       setBusy(false);
     }
   }
