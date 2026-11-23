@@ -818,7 +818,7 @@ export function TradePlatform() {
         ...m,
         { id: uid(), role: "assistant", kind: "text", text: res.text },
       ]);
-        } catch (err) {
+    } catch (err) {
       const signedOut =
         err instanceof Error &&
         (err.name === "UnauthorizedError" || /unauthori[sz]ed/i.test(err.message));
@@ -834,7 +834,7 @@ export function TradePlatform() {
         },
       ]);
     } finally {
-      {
+    
       setBusy(false);
     }
   }
