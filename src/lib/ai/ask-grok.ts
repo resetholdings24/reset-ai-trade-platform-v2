@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { AGENTS } from "@/lib/trade/knowledge";
 import type { AgentId } from "@/lib/trade/types";
+import { authMiddleware } from "@/lib/auth/middleware";
 
 const PERSONAS: Record<AgentId, string> = {
   guidance:
@@ -14,6 +15,7 @@ const PERSONAS: Record<AgentId, string> = {
 };
 
 export const askGrok = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
   .validator((input: { query: string; agent: AgentId; history: { role: string; content: string }[] }) => input)
   .handler(async ({ data }) => {
     const apiKey = process.env.XAI_API_KEY;
